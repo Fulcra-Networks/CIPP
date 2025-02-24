@@ -19,64 +19,122 @@
   },
   {
     "name": "Autotask Integration",
+    "id": "Autotask",
     "type": "Autotask",
     "cat": "AutotaskPSA",
-    "forceSyncButton": true,
-    "helpText": "Autotask Integration allows for ticket creation etc.",
+    "logo": "/assets/integrations/autotask_light.png",
+    "logoDark": "/assets/integrations/autotask_dark.png",
+    "description": "Enable the Autotask integration to create tickets from CIPP.",
+    "helpText": "This integration allows you to create tickets automatically from CIPP.",
+    "mappingRequired": true,
+    "links": [
+      {
+        "name": "Autotask PSA",
+        "url": "https://www.datto.com/products/autotask-psa/features/"
+      }
+    ],
     "SettingOptions": [
       {
-        "type": "input",
-        "fieldtype": "input",
-        "name": "Autotask.APIUser",
-        "label": "API User",
-        "placeholder": "user@domain.com"
-      },
-      {
-        "type": "input",
-        "fieldtype": "password",
-        "name": "Autotask.APIKey",
-        "label": "API User password",
-        "placeholder": "Enter your API password"
-      },
-      {
-        "type": "input",
-        "fieldtype": "input",
-        "name": "Autotask.APIIntegrationCode",
-        "label": "API Integration Code",
-        "placeholder": "user@domain.com"
-      },
-      {
-        "type": "checkbox",
+        "type": "switch",
         "name": "Autotask.Enabled",
         "label": "Enable Integration"
-      }
+      },
+      {
+        "type": "textField",
+        "name": "Autotask.APIUser",
+        "label": "API User",
+        "placeholder": "user@domain.com",
+        "required": true
+      },
+      {
+        "type": "textField",
+        "name": "Autotask.APIIntegrationCode",
+        "label": "API Integration Code",
+        "placeholder": "01234AABBCCDD",
+        "required": true
+      },
+      {
+        "type": "password",
+        "name": "Autotask.APIKey",
+        "label": "API User password",
+        "placeholder": "******",
+        "required": true
+      }      
     ]
   },
   {
     "name": "IronScales Integration",
+    "id": "IronScales",
     "type": "IronScales",
     "cat": "AntiPhishing",
-    "forceSyncButton": false,
-    "helpText": "IronScales Integration allows for ticket creation, phishing management etc.",
+    "logo": "/assets/integrations/ironscales_light.png",
+    "logoDark": "/assets/integrations/ironscales_dark.png",
+    "description": "Enable the Ironscales integration to create Antiphishing tickets in PSA.",
+    "helpText": "This integration allows CIPP to create Phishing review tickets in your PSA. Must have PSA configured.",
+    "mappingRequired": true,
+    "links": [
+      {
+        "name": "Ironscales for MSPs",
+        "url": "https://ironscales.com/platform"
+      }
+    ],
     "SettingOptions": [
       {
-        "type": "input",
-        "fieldtype": "input",
-        "name": "IronScales.ApiHost",
-        "label": "IronScales API host address",
-        "placeholder": "https://appapi.ironscales.com/appapi"
-      },
-      {
-        "type": "input",
-        "fieldtype": "password",
-        "name": "IronScales.APIKey",
-        "label": "IronScales API Client key",
-        "placeholder": "Enter your IronScales API Client key"
-      },
-      {
-        "type": "checkbox",
+        "type": "switch",
         "name": "IronScales.Enabled",
         "label": "Enable Integration"
+      },
+      {
+        "type": "textField",
+        "name": "IronScales.ApiHost",
+        "label": "Client ID",
+        "placeholder": "Enter your Sherweb Client ID",
+        "required": true
+      },
+      {
+        "type": "password",
+        "name": "IronScales.APIKey",
+        "label": "IronScales API Client key",
+        "placeholder": "Enter your IronScales API Client key",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "N-Central Integration",
+    "id": "NCentral",
+    "type": "NCentral",
+    "cat": "RMM",
+    "logo": "/assets/integrations/NAble_light.png",
+    "logoDark": "/assets/integrations/NAble_dark.png",
+    "description": "N-Central RMM integration enables the scheduled job to update Autotask asset items.",
+    "helpText": "N-Central RMM integration enables the scheduled job to update Autotask asset items.",
+    "mappingRequired": false,
+    "links": [
+      {
+        "name": "N-Able N-central RMM",
+        "url": "https://www.n-able.com/resources/n-central-and-what-is-included"
+      }
+    ],
+    "SettingOptions": [
+      {
+        "type": "switch",
+        "name": "NCentral.Enabled",
+        "label": "Enable Integration"
+      },
+      {
+        "type": "textField",
+        "name": "NCentral.ApiHost",
+        "label": "NCentral API host address (DO NOT INCLUDE HTTPS)",
+        "placeholder": "Enter your NCentral API Host",
+        "required": true
+      },
+      {
+        "type": "password",
+        "name": "NCentral.APIKey",
+        "label": "NCentral API Client key",
+        "placeholder": "Enter your NCentral API Client key",
+        "required": true
       }
     ]
   },
