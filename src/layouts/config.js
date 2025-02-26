@@ -437,6 +437,10 @@ export const nativeMenuItems = [
         ],
       },
       {
+        title: "Asset Management",
+        path: "/tools/assetmanagement"
+      },
+      {
         title: "Template Library",
         path: "/tools/templatelib",
         roles: ["editor", "admin", "superadmin"],
