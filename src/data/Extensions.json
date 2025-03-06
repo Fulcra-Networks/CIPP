@@ -109,7 +109,7 @@
     "logoDark": "/assets/integrations/NAble_dark.png",
     "description": "N-Central RMM integration enables the scheduled job to update Autotask asset items.",
     "helpText": "N-Central RMM integration enables the scheduled job to update Autotask asset items.",
-    "mappingRequired": false,
+    "mappingRequired": true,
     "links": [
       {
         "name": "N-Able N-central RMM",
