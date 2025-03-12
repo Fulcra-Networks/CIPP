@@ -149,6 +149,7 @@ const CippIntegrationSettings = ({ children }) => {
   return (
     <>
       {mappings.isSuccess && extension ? (
+        console.log(JSON.stringify(mappings)),
         <>
           <CardContent>
             <Typography variant="h5" sx={{ mb: 3 }}>

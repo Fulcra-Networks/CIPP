@@ -15,10 +15,12 @@ import CippButtonCard from "/src/components/CippCards/CippButtonCard";
 import { CippDataTable } from "/src/components/CippTable/CippDataTable";
 import { ApiGetCall, ApiPostCall } from "/src/api/ApiCall";
 import { useSettings } from "../../../hooks/use-settings";
+import { useRouter } from "next/router";
 
 
-const Page = () => {
-  const { currentTenant } = useSettings();
+const AssetManagement = () => {
+  const router = useRouter();
+  const { currentTenant } = useSettings().currentTenant;
   const [tableDataMatch, setTableDataMatch] = useState([]);
   const [tableDataPSA,   setTableDataPSA] = useState([]);
   const [tableDataRMM,   setTableDataRMM] = useState([]);
@@ -35,116 +37,47 @@ const Page = () => {
       setTableDataPSA(matchedDevs.data.UnmatchedPSADevices ?? []);
       setTableDataRMM(matchedDevs.data.UnmatchedRMMDevices ?? []);
     }
-  }, [matchedDevs.isSuccess]);
+  }, [router.query, currentTenant, matchedDevs.isSuccess]);
 
   return (
-    <Container sx={{ pt: 3 }} maxWidth="xl">
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <CippButtonCard
-            title="Asset Management"
-          ></CippButtonCard>
-        </Grid>
-        <Grid item xs={12}>
-          {/*Note: The API call should return "Matched"*/}
-          {matchedDevs.isSuccess ? ( 
-          <CippDataTable
-            noCard={false}
-            title="PSA & RMM Matched Assets"
-            data={tableDataMatch}
-            simple={false}
-            refreshFunction={() => matchedDevs.refetch()}
-          />
-        ) : ( 
-          <Box>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Box>
-                    <Skeleton variant="rectangular" height={60} />
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Box>
-                    <Skeleton variant="rectangular" height={60} />
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Box>
-                    <Skeleton variant="rectangular" height={300} />
-                  </Box>
-                </Grid>
-              </Grid>
-            </Box>
-        )}
-        </Grid>
-        <Grid item xs={12} md={6} lg={6}>
-          {/*Note: The API call should return psa unmatched*/}
-          {matchedDevs.isSuccess ? (
-          <CippDataTable
-            noCard={false}
-            title="PSA Unmatched Assets"
-            data={tableDataPSA}
-            simple={false}
-            refreshFunction={() => matchedDevs.refetch()}
-          />
-          ): (
-            <Box>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Box>
-                    <Skeleton variant="rectangular" height={60} />
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Box>
-                    <Skeleton variant="rectangular" height={60} />
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Box>
-                    <Skeleton variant="rectangular" height={300} />
-                  </Box>
-                </Grid>
-              </Grid>
-            </Box>
-          )}
-        </Grid>
-        <Grid item xs={12} md={6} lg={6}>
-          {/*Note: The API call should return rmm unmatched*/}
-          {matchedDevs.isSuccess ? (
-          <CippDataTable
-            noCard={false}
-            title="RMM Unmatched Assets"
-            data={tableDataRMM}
-            simple={false}
-            refreshFunction={() => matchedDevs.refetch()}
-          />
-          ) : ( 
-            <Box>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Box>
-                    <Skeleton variant="rectangular" height={60} />
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Box>
-                    <Skeleton variant="rectangular" height={60} />
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Box>
-                    <Skeleton variant="rectangular" height={300} />
-                  </Box>
-                </Grid>
-              </Grid>
-            </Box>
-          )}
-        </Grid>
+    <Grid container spacing={2}>
+      <Grid item xs={12}>
+        <CippButtonCard title="Asset Management"/>
       </Grid>
-    </Container>
+      <Grid item xs={12}>
+        {/*Note: The API call should return "Matched"*/}         
+        <CippDataTable
+          noCard={false}
+          title="PSA & RMM Matched Assets"
+          data={tableDataMatch}
+          simple={false}
+          refreshFunction={() => matchedDevs.refetch()}
+        />     
+      </Grid>
+      <Grid item xs={12} md={6} lg={6}>
+        {/*Note: The API call should return psa unmatched*/}
+        <CippDataTable
+          noCard={false}
+          title="PSA Unmatched Assets"
+          data={tableDataPSA}
+          simple={false}
+          refreshFunction={() => matchedDevs.refetch()}
+        />
+                
+      </Grid>
+      <Grid item xs={12} md={6} lg={6}>
+        {/*Note: The API call should return rmm unmatched*/}      
+        <CippDataTable
+          noCard={false}
+          title="RMM Unmatched Assets"
+          data={tableDataRMM}
+          simple={false}
+          refreshFunction={() => matchedDevs.refetch()}
+        />
+      </Grid>
+    </Grid>
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout allTenantsSupport={false}>{page}</DashboardLayout>;
-export default Page;
+AssetManagement.getLayout = (page) => <DashboardLayout allTenantsSupport={false}>{page}</DashboardLayout>;
+export default AssetManagement;
