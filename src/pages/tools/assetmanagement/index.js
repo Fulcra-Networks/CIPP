@@ -8,13 +8,25 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { Grid, Container } from "@mui/material";
+import { 
+  Grid,
+  Button, 
+  Container,
+  Stack, 
+  Tooltip, 
+  IconButton,
+  Typography  
+} from "@mui/material";
+import { Search, Close } from "@mui/icons-material";
+import { useForm } from "react-hook-form";
 import { Layout as DashboardLayout } from "/src/layouts/index.js";
 import CippButtonCard from "/src/components/CippCards/CippButtonCard";
+import CippFormComponent from "/src/components/CippComponents/CippFormComponent";
 import { ApiGetCall  } from "/src/api/ApiCall";
 import { useSettings } from "/src/hooks/use-settings";
 import { useRouter } from "next/router";
 import { CippDataTable } from "/src/components/CippTable/CippDataTable";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 
 const AssetManagement = () => {
@@ -32,6 +44,15 @@ const AssetManagement = () => {
     'RMMName'
   ]
 
+
+  const formControl = useForm({
+    defaultValues: {
+      name: "",
+      style: "Table",
+      Fields: [{ UseExistingInfo: false }],
+    },
+  });
+
   const matchedDevs = ApiGetCall({
     url: "/api/ExecAssetManagement",
     data: { tenantFilter: currentTenant }, //Data is {paramName: paramValue}
@@ -47,35 +68,64 @@ const AssetManagement = () => {
   }, [router.query, currentTenant, matchedDevs.isSuccess]);
 
   return (
-    <Container>
-      <CippButtonCard title="Asset Management"/>
+    <Container >
+        <Stack spacing={2} sx={{ p: 3, mt: 1 }}>
+          <CippButtonCard component="accordion" title="PSA Assets" accordionExpanded={true}>
+            <Typography variant="h6" gutterBottom>
+              Matched assets (via rmmID on PSA asset)
+            </Typography>
+            <Grid container spacing={2}>              
+            <Grid item xs={6} sm={6} md={4}>
+              <CippFormComponent
+                label="Unmatched PSA"
+                name="style"
+                type="select"
+                options={tableDataPSA}
+                formControl={formControl}
+              />
+            </Grid>
+            <Grid item xs={6} sm={6} md={4}>
+              <CippFormComponent
+                label="Unmatched RMM"
+                name="style"
+                type="select"
+                options={tableDataRMM}
+                formControl={formControl}
+              />
+            </Grid>
+              {/* Submit Button */}
+            <Grid item xs={12}>              
+              <Button onClick={matchedDevs.refetch} variant="contained" color="primary" startIcon={<Search />}>
+                Reload Tables
+              </Button>
+            </Grid>
+            </Grid>
+          </CippButtonCard>
+            <CippDataTable
+              title="PSA & RMM Matched Assets"
+              data={tableDataMatch}
+              simpleColumns={columns}
+              isFetching={matchedDevs.isFetching}
+              />
+        
+          <CippDataTable
+            noCard={false}
+            title="PSA Unmatched Assets"
+            data={tableDataPSA}
+            simpleColumns={columns}
+            isFetching={matchedDevs.isFetching}
+            />
+                    
 
-      <CippDataTable
-        title="PSA & RMM Matched Assets"
-        data={tableDataMatch}
-        simpleColumns={columns}
-        isFetching={matchedDevs.isFetching}
-      />
-      
-      <Grid item xs={12} md={6} lg={6}>
-        <CippDataTable
-          noCard={false}
-          title="PSA Unmatched Assets"
-          data={tableDataPSA}
-          simpleColumns={columns}
-          isFetching={matchedDevs.isFetching}
-        />
-                  
-      </Grid>
-      <Grid item xs={12} md={6} lg={6}>
-        <CippDataTable
-          noCard={false}
-          title="RMM Unmatched Assets"
-          data={tableDataRMM}
-          simpleColumns={columns}
-          isFetching={matchedDevs.isFetching}
-        />
-      </Grid>
+          <CippDataTable
+            noCard={false}
+            title="RMM Unmatched Assets"
+            data={tableDataRMM}
+            simpleColumns={columns}
+            isFetching={matchedDevs.isFetching}
+            />
+
+            </Stack>
     </Container>
   );
 };
