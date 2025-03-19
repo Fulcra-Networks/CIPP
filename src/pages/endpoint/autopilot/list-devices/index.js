@@ -2,9 +2,10 @@ import { Layout as DashboardLayout } from "/src/layouts/index.js";
 import { CippTablePage } from "/src/components/CippComponents/CippTablePage.jsx";
 import { CippApiDialog } from "/src/components/CippComponents/CippApiDialog.jsx";
 import { Button } from "@mui/material";
-import { PersonAdd, Delete, Sync, Add } from "@mui/icons-material";
+import { PersonAdd, Delete, Sync, Add, AddLink } from "@mui/icons-material";
 import { useDialog } from "../../../../hooks/use-dialog";
 import Link from "next/link";
+import GroupTags from "/src/data/AutopilotGroupTags.json"
 import { useState } from "react";
 
 const Page = () => {
@@ -41,6 +42,34 @@ const Page = () => {
         },
       ],
       color: "info",
+    },
+    {
+      label:"Set Group Tag",
+      icon: <AddLink/>,
+      type: "POST",
+      url:"/api/ExecSetGroupTag",
+      data: {
+        ID: "id"
+      },
+      fields: [
+        {
+          type: "autoComplete",
+          name: "groupId",
+          label: "Select a group to add the user to",
+          multiple: false,
+          creatable: false,
+          options: [
+            { label: "ManagedPC", value: "ManagedPC"},
+            { label: "Administrator", value: "Administrator"},
+            { label: "Standard", value: "Standard"},           
+            { label: "PAL-Shared", value: "PAL-Shared"},
+            { label: "PAL", value: "PAL"},
+            { label: "BLY", value: "BLY"},
+            { label: "BLY-Shared", value: "BLY-Shared"}
+          ]
+        },
+      ],
+      confirmText: "Enter a Group Tag and press continue."
     },
     {
       label: "Delete Device",
