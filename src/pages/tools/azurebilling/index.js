@@ -35,7 +35,7 @@ const Page = () => {
     <>
       <CippWizardPage
         steps={steps}
-        postUrl="/api/"
+        postUrl="/api/ExecSendAzureCharges"
         wizardTitle="Azure Billing"
       />
     </>
