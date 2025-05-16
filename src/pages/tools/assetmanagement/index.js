@@ -101,12 +101,12 @@ const AssetManagement = () => {
             </Grid>
             </Grid>
           </CippButtonCard>
-            <CippDataTable
-              title="PSA & RMM Matched Assets"
-              data={tableDataMatch}
-              simpleColumns={columns}
-              isFetching={matchedDevs.isFetching}
-              />
+          <CippDataTable
+            title="PSA & RMM Matched Assets"
+            data={tableDataMatch}
+            simpleColumns={columns}
+            isFetching={matchedDevs.isFetching}
+            />
         
           <CippDataTable
             noCard={false}
@@ -114,8 +114,7 @@ const AssetManagement = () => {
             data={tableDataPSA}
             simpleColumns={columns}
             isFetching={matchedDevs.isFetching}
-            />
-                    
+            />                    
 
           <CippDataTable
             noCard={false}

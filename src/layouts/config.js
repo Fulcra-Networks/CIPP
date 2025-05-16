@@ -442,6 +442,11 @@ export const nativeMenuItems = [
         roles: ["editor", "admin", "superadmin"],
       },
       {
+        title: "Azure Billing",
+        path: "/tools/azurebilling",
+        roles: ["admin", "superadmin"],
+      },
+      {
         title: "Template Library",
         path: "/tools/templatelib",
         roles: ["editor", "admin", "superadmin"],

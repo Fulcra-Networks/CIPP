@@ -63,6 +63,72 @@
     ]
   },
   {
+    "name": "Arrow Azure Billing",
+    "id": "AzureBilling",
+    "type": "AzureBilling",
+    "cat": "Tools",
+    "logo": "/assets/integrations/Arrow_Light.png",
+    "logoDark": "/assets/integrations/Arrow_Dark.png",
+    "description": "Enable the Arrow Azure billing.",
+    "helpText": "This integration allows invoicing of Azure consumed charges via Autotask.",
+    "mappingRequired": false,
+    "links": [
+      {
+        "name": "Arrow CSP",
+        "url": "https://www.arrow.com/globalecs/na/vendors/microsoft/microsoft-azure/"
+      }
+    ],
+    "SettingOptions": [
+      {
+        "type": "switch",
+        "name": "AzureBilling.Enabled",
+        "label": "Enable Integration"
+      },
+      {
+        "type": "password",
+        "name": "AzureBilling.ArrowAuthKey",
+        "label": "Auth Key",
+        "placeholder": "******",
+        "required": true
+      },
+      {
+        "type": "password",
+        "name": "AzureBilling.ApiSecret",
+        "label": "API Integration Code",
+        "placeholder": "******",
+        "required": true
+      },
+      {
+        "type": "password",
+        "name": "AzureBilling.AzStorageConnStr",
+        "label": "AZ Storage Connection String",
+        "placeholder": "****",
+        "required": true
+      },
+      {
+        "type": "textField",
+        "name": "AzureBilling.baseURI",
+        "label": "API URL",
+        "placeholder": "https://xsp.arrow.com",
+        "required": true
+      },
+      {
+        "type": "textField",
+        "name": "AzureBilling.ExcludeCust",
+        "label": "Excluded Customer",
+        "placeholder": "XSP1234",
+        "required": true
+      },
+      {
+        "type": "textField",
+        "name": "AzureBilling.SKU",
+        "label": "Target SKUs (Comma separated)",
+        "placeholder": "MS-AZR-0145P,DZH318Z0BPS6:0001",
+        "required": true
+      }
+    ]
+  },
+  {
     "name": "IronScales Integration",
     "id": "IronScales",
     "type": "IronScales",
