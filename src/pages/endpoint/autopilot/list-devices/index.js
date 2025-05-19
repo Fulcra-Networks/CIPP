@@ -45,7 +45,7 @@ const Page = () => {
     },
     {
       label:"Set Group Tag",
-      icon: <AddLink/>,
+      icon: <Sell/>,
       type: "POST",
       url:"/api/ExecSetGroupTag",
       data: {
@@ -58,15 +58,7 @@ const Page = () => {
           label: "Select a group to add the user to",
           multiple: false,
           creatable: false,
-          options: [
-            { label: "ManagedPC", value: "ManagedPC"},
-            { label: "Administrator", value: "Administrator"},
-            { label: "Standard", value: "Standard"},           
-            { label: "PAL-Shared", value: "PAL-Shared"},
-            { label: "PAL", value: "PAL"},
-            { label: "BLY", value: "BLY"},
-            { label: "BLY-Shared", value: "BLY-Shared"}
-          ]
+          options: GroupTags
         },
       ],
       confirmText: "Enter a Group Tag and press continue."
@@ -104,31 +96,6 @@ const Page = () => {
               return "Display name cannot contain only numbers.";
             }
             return true; // Indicates validation passed
-          },
-        },
-      ],
-      color: "secondary",
-    },
-    {
-      label: "Edit Group Tag",
-      icon: <Sell />,
-      type: "POST",
-      url: "/api/ExecSetAPDeviceGroupTag",
-      data: {
-        deviceId: "id",
-        serialNumber: "serialNumber",
-      },
-      confirmText: "Enter the new group tag for the device.",
-      fields: [
-        {
-          type: "textField",
-          name: "groupTag",
-          label: "Group Tag",
-          validate: (value) => {
-            if (value && value.length > 128) {
-              return "Group tag cannot exceed 128 characters.";
-            }
-            return true; // Validation passed
           },
         },
       ],
