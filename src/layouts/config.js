@@ -444,7 +444,18 @@ export const nativeMenuItems = [
       {
         title: "Azure Billing",
         path: "/tools/azurebilling",
-        roles: ["admin", "superadmin"],
+        items: [
+          {
+            title: "Review Sent",
+            path: "/tools/azurebilling",
+            roles: ["admin", "superadmin"],
+          },
+          {
+            title: "Generate Invoices",
+            path: "/tools/azurebilling",
+            roles: ["admin", "superadmin"],
+          },          
+        ],
       },
       {
         title: "Template Library",
