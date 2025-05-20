@@ -451,7 +451,7 @@ export const nativeMenuItems = [
             roles: ["admin", "superadmin"],
           },
           {
-            title: "Generate Invoices",
+            title: "Generate Contract Charges",
             path: "/tools/azurebilling",
             roles: ["admin", "superadmin"],
           },          
