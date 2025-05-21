@@ -446,7 +446,7 @@ export const nativeMenuItems = [
         path: "/tools/azurebilling",
         items: [
           {
-            title: "Review Sent",
+            title: "Review Sent Charges",
             path: "/tools/azurebilling/reviewsent",
             roles: ["admin", "superadmin"],
           },
