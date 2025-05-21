@@ -63,13 +63,13 @@
     ]
   },
   {
-    "name": "Arrow Azure Billing",
+    "name": "Azure Billing",
     "id": "AzureBilling",
     "type": "AzureBilling",
     "cat": "Tools",
     "logo": "/assets/integrations/Arrow_Light.png",
     "logoDark": "/assets/integrations/Arrow_Dark.png",
-    "description": "Enable the Arrow Azure billing.",
+    "description": "Enables Azure billing.",
     "helpText": "This integration allows invoicing of Azure consumed charges via Autotask.",
     "mappingRequired": false,
     "links": [
@@ -97,14 +97,7 @@
         "label": "API Integration Code",
         "placeholder": "******",
         "required": true
-      },
-      {
-        "type": "password",
-        "name": "AzureBilling.AzStorageConnStr",
-        "label": "AZ Storage Connection String",
-        "placeholder": "****",
-        "required": true
-      },
+      },     
       {
         "type": "textField",
         "name": "AzureBilling.baseURI",
