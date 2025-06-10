@@ -63,7 +63,7 @@
     ]
   },
   {
-    "name": "Azure Billing",
+    "name": "Arrow Azure Billing",
     "id": "AzureBilling",
     "type": "AzureBilling",
     "cat": "Tools",
@@ -86,21 +86,21 @@
       },
       {
         "type": "password",
-        "name": "AzureBilling.ArrowAuthKey",
-        "label": "Auth Key",
+        "name": "AzureBilling.APIAuthKey",
+        "label": "API Auth Key",
         "placeholder": "******",
         "required": true
       },
       {
         "type": "password",
-        "name": "AzureBilling.ApiSecret",
+        "name": "AzureBilling.APIKey",
         "label": "API Secret",
         "placeholder": "******",
         "required": true
       },     
       {
         "type": "textField",
-        "name": "AzureBilling.baseURI",
+        "name": "AzureBilling.APIHost",
         "label": "API URL",
         "placeholder": "https://xsp.arrow.com",
         "required": true
