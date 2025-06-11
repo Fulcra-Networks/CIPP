@@ -107,6 +107,13 @@
       },
       {
         "type": "textField",
+        "name": "AzureBilling.CompanyName",
+        "label": "Arrow MSP Name",
+        "placeholder": "YOUR MSP LLC.",
+        "required": true
+      },
+      {
+        "type": "textField",
         "name": "AzureBilling.ExcludeCust",
         "label": "Excluded Customer",
         "placeholder": "XSP1234",
