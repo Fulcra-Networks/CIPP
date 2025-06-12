@@ -13,15 +13,6 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useForm } from "react-hook-form";
 import CippFormComponent from "/src/components/CippComponents/CippFormComponent";
 
-const simpleColumns = [
-  "Customer",
-  "SentDate",
-  "ChargeDate",
-  "Contract",
-  "Cost",
-  "Price"
-];
-
 const apiUrl = "/api/ExecGetSentAzureCharges";
 const pageTitle = "Sent Azure Charges";
 
@@ -77,7 +68,6 @@ const Page = () => {
       }
       title={pageTitle}
       apiUrl={apiUrl}
-      simpleColumns={simpleColumns}
       queryKey={`SentCharges-${dateFilter}`}
       tenantInTitle={false}
       apiData={{
