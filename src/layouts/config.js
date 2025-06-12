@@ -451,6 +451,17 @@ export const nativeMenuItems = [
         path: "/tools/azurebilling",
         items: [
           {
+            title: "Manage Mapping",
+            path: "/tools/azurebilling/managemapping",
+            items: [
+              {
+                title: "Add Mapping",
+                path: "/tools/azurebilling/managemapping/addmapping",
+                roles: ["admin", "superadmin"]
+              }
+            ],
+          },
+          {
             title: "Review Sent Charges",
             path: "/tools/azurebilling/reviewsent",
             roles: ["admin", "superadmin"],
