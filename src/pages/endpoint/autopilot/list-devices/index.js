@@ -6,7 +6,6 @@ import { PersonAdd, Delete, Sync, Add, Edit, Sell } from "@mui/icons-material";
 import { useDialog } from "../../../../hooks/use-dialog";
 import Link from "next/link";
 import GroupTags from "/src/data/AutopilotGroupTags.json"
-import { useState } from "react";
 
 const Page = () => {
   const pageTitle = "Autopilot Devices";
