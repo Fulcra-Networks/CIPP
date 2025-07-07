@@ -44,12 +44,20 @@ const AzureBillingAddMapping = (props) => {
       <Grid container spacing={2}>
         <Grid item size={{ md: 6, xs: 12 }}>
           <CippFormComponent
-            type="textField"
+            type="autoComplete"
             fullWidth
             validators={{ required: "Azure Subscription ID is required" }}
             label="Subscription ID"
             name="azSubscriptionId"
             formControl={formControl}
+            multiple={false}
+            api={{
+              url: "/api/ListAzureBillingCompanies",
+              labelField: (option) =>
+                `${option.CompanyName} - ${option.Reference}`,
+              valueField: "Reference",
+              queryKey: `ListAzCompanies-${userSettingsDefaults?.currentTenant ?? undefined}`
+            }}
           />
         </Grid>
         <Grid item size={{ md: 6, xs: 12 }}>
