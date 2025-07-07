@@ -1,4 +1,6 @@
 
+import { Layout as DashboardLayout } from "/src/layouts/index.js";
+
 const Page = () => {
   
   return (
