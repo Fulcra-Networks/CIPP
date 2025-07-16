@@ -57,7 +57,8 @@ export const CippDataTable = (props) => {
     maxHeightOffset = "380px",
     defaultSorting = [],
     useGrouping = false,
-    useGroupedColumns = []
+    useStickyFooter = false,
+    useGroupedColumns = [],
   } = props;
   const [columnVisibility, setColumnVisibility] = useState(initialColumnVisibility);
   const [configuredSimpleColumns, setConfiguredSimpleColumns] = useState(simpleColumns);
@@ -70,6 +71,7 @@ export const CippDataTable = (props) => {
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [groupingEnabled] = useState(useGrouping);
+  const [stickyFooterEnabled] = useState(useStickyFooter);
   const [groupedColumns] = useState(useGroupedColumns);
   const waitingBool = api?.url ? true : false;
 
@@ -292,6 +294,7 @@ export const CippDataTable = (props) => {
     columns: memoizedColumns,
     data: memoizedData ?? [],
     enableGrouping: groupingEnabled,
+    enableStickyFooter: stickyFooterEnabled,
     groupedColumnMode: 'remove',
     initialState: {grouping: groupedColumns},
     state: {
