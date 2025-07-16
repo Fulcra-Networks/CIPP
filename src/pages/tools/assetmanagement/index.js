@@ -32,18 +32,14 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 const AssetManagement = () => {
   const router = useRouter();
   const currentTenant = useSettings().currentTenant;
-  const [tableDataMatch, setTableDataMatch] = useState([]);
+  const [tableDataINT, setTableDataINT] = useState([]);
   const [tableDataPSA,   setTableDataPSA] = useState([]);
   const [tableDataRMM,   setTableDataRMM] = useState([]);
   const columns = [
     'Name',
-    'Contract',
-    'SerialNumber',
-    'PSAId',
-    'RMMId',
-    'RMMName'
+    'SerialNumber'
   ]
-
+ 
 
   const formControl = useForm({
     defaultValues: {
@@ -61,70 +57,70 @@ const AssetManagement = () => {
 
   useEffect(() => {
     if (matchedDevs.isSuccess) {
-      setTableDataMatch(matchedDevs.data.MatchedDevices ?? []);
-      setTableDataPSA(matchedDevs.data.UnmatchedPSADevices ?? []);
-      setTableDataRMM(matchedDevs.data.UnmatchedRMMDevices ?? []);
+      setTableDataINT(matchedDevs.data.assetsINT ?? []);
+      setTableDataPSA(matchedDevs.data.assetsPSA ?? []);
+      setTableDataRMM(matchedDevs.data.assetsRMM ?? []);
     }
   }, [router.query, currentTenant, matchedDevs.isSuccess]);
 
   return (
     <Container >
-        <Stack spacing={2} sx={{ p: 3, mt: 1 }}>
-          <CippButtonCard component="accordion" title="PSA Assets" accordionExpanded={true}>
-            <Typography variant="h6" gutterBottom>
-              Matched assets (via rmmID on PSA asset)
-            </Typography>
-            <Grid container spacing={2}>              
-            <Grid item xs={6} sm={6} md={4}>
-              <CippFormComponent
-                label="Unmatched PSA"
-                name="style"
-                type="select"
-                options={tableDataPSA}
-                formControl={formControl}
-              />
-            </Grid>
-            <Grid item xs={6} sm={6} md={4}>
-              <CippFormComponent
-                label="Unmatched RMM"
-                name="style"
-                type="select"
-                options={tableDataRMM}
-                formControl={formControl}
-              />
-            </Grid>
-              {/* Submit Button */}
-            <Grid item xs={12}>              
-              <Button onClick={matchedDevs.refetch} variant="contained" color="primary" startIcon={<Search />}>
-                Reload Tables
-              </Button>
-            </Grid>
-            </Grid>
-          </CippButtonCard>
-          <CippDataTable
-            title="PSA & RMM Matched Assets"
-            data={tableDataMatch}
-            simpleColumns={columns}
-            isFetching={matchedDevs.isFetching}
+      <Stack spacing={2} sx={{ p: 3, mt: 1 }}>
+        <CippButtonCard component="accordion" title="PSA Assets" accordionExpanded={true}>
+          <Typography variant="h6" gutterBottom>
+            Matched assets (via rmmID on PSA asset)
+          </Typography>
+          <Grid container spacing={2}>              
+          <Grid item xs={6} sm={6} md={4}>
+            <CippFormComponent
+              label="Assets in PSA"
+              name="style"
+              type="select"
+              options={tableDataPSA}
+              formControl={formControl}
             />
-        
-          <CippDataTable
-            noCard={false}
-            title="PSA Unmatched Assets"
-            data={tableDataPSA}
-            simpleColumns={columns}
-            isFetching={matchedDevs.isFetching}
-            />                    
-
-          <CippDataTable
-            noCard={false}
-            title="RMM Unmatched Assets"
-            data={tableDataRMM}
-            simpleColumns={columns}
-            isFetching={matchedDevs.isFetching}
+          </Grid>
+          <Grid item xs={6} sm={6} md={4}>
+            <CippFormComponent
+              label="Unmatched RMM"
+              name="style"
+              type="select"
+              options={tableDataRMM}
+              formControl={formControl}
             />
+          </Grid>
+            {/* Submit Button */}
+          <Grid item xs={12}>              
+            <Button onClick={matchedDevs.refetch} variant="contained" color="primary" startIcon={<Search />}>
+              Reload Tables
+            </Button>
+          </Grid>
+          </Grid>
+        </CippButtonCard>
+        <CippDataTable
+          title="Assets in PSA"
+          data={tableDataPSA}
+          simple={true}
+          simpleColumns={columns}
+          isFetching={matchedDevs.isFetching}
+          />
 
-            </Stack>
+        <CippDataTable
+          title="Assets in RMM"
+          data={tableDataRMM}
+          simple={true}
+          simpleColumns={columns}
+          isFetching={matchedDevs.isFetching}
+          />
+
+        <CippDataTable
+          title="Assets in Intune"
+          data={tableDataINT}
+          simple={true}
+          simpleColumns={columns}
+          isFetching={matchedDevs.isFetching}
+          />
+      </Stack>
     </Container>
   );
 };
