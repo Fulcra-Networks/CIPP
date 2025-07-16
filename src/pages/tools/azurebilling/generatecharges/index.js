@@ -1,7 +1,7 @@
 import { Layout as DashboardLayout } from "/src/layouts/index.js";
 import { CippWizardConfirmation } from "/src/components/CippWizard/CippWizardConfirmation";
 import CippWizardPage from "/src/components/CippWizard/CippWizardPage.jsx";
-import { DateComponent } from "/src/components/dateselectcomponent";
+import { DateSelect } from "/src/components/azBillingDateSelect.jsx";
 import { BillingReviewMapped, BillingReviewUnmapped } from "/src/components/billingreviewtables"
 
 const Page = () => {
@@ -9,7 +9,7 @@ const Page = () => {
     {
       title: "Step 1",
       description: "Date Selection",
-      component: DateComponent,
+      component: DateSelect,
     },
     {
       title: "Step 2",
