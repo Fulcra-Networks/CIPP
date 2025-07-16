@@ -9,6 +9,7 @@ export const DateSelect = (props) => {
     formControl = useForm({
       defaultValues: {
         billMonth: '',
+        billingMonth: '',
         toggleSwitch: false,
         totalToBill: '',
         totalUnmapped: ''
