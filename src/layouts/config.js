@@ -840,9 +840,20 @@ export const nativeMenuItems = [
         ],
       },
       {
-        title: "Asset Management",
-        path: "/tools/assetmanagement",
+        title: "Client Management",
         roles: ["editor", "admin", "superadmin"],
+        items: [
+          {
+            title: "Client Assets",
+            path: "/tools/clientmanagement/assets",
+            permissions: ["CIPP.Core.*"],
+          },
+          {
+            title: "Service Management",
+            path: "/tools/clientmanagement/servicemanagement",
+            permissions: ["CIPP.Core.*"],
+          }
+        ]
       },
       {
         title: "Azure Billing",
