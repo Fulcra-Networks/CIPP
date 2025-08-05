@@ -849,28 +849,35 @@ export const nativeMenuItems = [
       {
         title: "Azure Billing",
         path: "/tools/azurebilling",
+        permissions: ["CIPP.Core.*"],
+        roles: ["admin", "superadmin"],
         items: [
           {
             title: "Manage Mapping",
             path: "/tools/azurebilling/managemapping",
+            permissions: ["CIPP.Core.*"],
+            roles: ["admin", "superadmin"],
             items: [
               {
                 title: "Add Mapping",
                 path: "/tools/azurebilling/managemapping/addmapping",
-                roles: ["admin", "superadmin"]
+                permissions: ["CIPP.Core.*"],
+                roles: ["admin", "superadmin"],
               }
             ],
           },
           {
             title: "Review Sent Charges",
             path: "/tools/azurebilling/reviewsent",
+            permissions: ["CIPP.Core.*"],
             roles: ["admin", "superadmin"],
           },
           {
             title: "Generate Contract Charges",
             path: "/tools/azurebilling/generatecharges",
+            permissions: ["CIPP.Core.*"],
             roles: ["admin", "superadmin"],
-          },          
+          },
         ],
       },
       {
