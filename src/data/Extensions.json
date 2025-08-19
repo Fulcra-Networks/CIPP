@@ -26,7 +26,6 @@
     "logoDark": "/assets/integrations/autotask_dark.png",
     "description": "Enable the Autotask integration to create tickets from CIPP.",
     "helpText": "This integration allows you to create tickets automatically from CIPP.",
-    "mappingRequired": true,
     "links": [
       {
         "name": "Autotask PSA",
@@ -60,7 +59,9 @@
         "placeholder": "******",
         "required": true
       }      
-    ]
+    ],
+    "mappingRequired": true,
+    "fieldMapping": true
   },
   {
     "name": "Arrow Azure Billing",

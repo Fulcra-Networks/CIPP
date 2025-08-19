@@ -832,7 +832,8 @@ export const nativeMenuItems = [
       },
       {
         title: "Client Management",
-        roles: ["editor", "admin", "superadmin"],
+        permissions: ["CIPP.Core.*"],
+        roles: ["admin", "superadmin"],
         items: [
           {
             title: "Client Assets",
@@ -842,6 +843,11 @@ export const nativeMenuItems = [
           {
             title: "Service Management",
             path: "/tools/clientmanagement/servicemanagement",
+            permissions: ["CIPP.Core.*"],
+          },
+          {
+            title: "Configure Client",
+            path: "/tools/clientmanagement/configureclient",
             permissions: ["CIPP.Core.*"],
           }
         ]
