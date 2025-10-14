@@ -866,8 +866,21 @@ export const nativeMenuItems = [
             roles: ["admin", "superadmin"],
             items: [
               {
-                title: "Add Mapping",
-                path: "/tools/azurebilling/managemapping/addmapping",
+                title: "Create Mapping",
+                path: "/tools/azurebilling/managemapping/create",
+                permissions: ["CIPP.Core.*"],
+                roles: ["admin", "superadmin"],
+              },
+              // HIDDEN - Update should only ever be called from the list mappings table.
+              // {
+              //   title: "Update Mapping",
+              //   path: "/tools/azurebilling/managemapping/update",
+              //   permissions: ["CIPP.Core.*"],
+              //   roles: ["admin", "superadmin"],
+              // },
+              {
+                title: "List Mappings",
+                path: "/tools/azurebilling/managemapping/list",
                 permissions: ["CIPP.Core.*"],
                 roles: ["admin", "superadmin"],
               }
