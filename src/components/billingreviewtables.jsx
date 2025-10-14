@@ -106,7 +106,7 @@ export const BillingReviewMapped = (props) => {
       {billingMappedCall.isSuccess && columnsReady ? (
         <>
           <Typography>
-            Take the result of previous month (which should be in the request) <br/>
+            Invoiced amount for previous month:<br/>
             ${ billingMappedCall.data.previousMonth }
           </Typography>
           <CippDataTable
