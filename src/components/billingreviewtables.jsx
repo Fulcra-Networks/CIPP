@@ -107,7 +107,7 @@ export const BillingReviewMapped = (props) => {
         <>
           <Typography>
             Invoiced amount for previous month:<br/>
-            ${ billingMappedCall.data.previousMonth }
+            <b>${ billingMappedCall.data.previousMonth }</b>
           </Typography>
           <CippDataTable
             width={"100%"}
