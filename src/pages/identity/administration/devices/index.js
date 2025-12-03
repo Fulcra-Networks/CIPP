@@ -124,7 +124,7 @@ const Page = () => {
           multiPost: true,
           allowResubmit: true,
           condition: (c) => c.accountEnabled && c.operatingSystem == "Windows",
-        },
+    },
   ];
 
   return (

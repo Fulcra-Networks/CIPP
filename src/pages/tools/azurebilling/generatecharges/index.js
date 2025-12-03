@@ -3,8 +3,10 @@ import { CippWizardConfirmation } from "/src/components/CippWizard/CippWizardCon
 import CippWizardPage from "/src/components/CippWizard/CippWizardPage.jsx";
 import { DateSelect } from "/src/components/azBillingDateSelect.jsx";
 import { BillingReviewMapped, BillingReviewUnmapped } from "/src/components/billingreviewtables"
+// import { useSettings } from "../../../../hooks/use-settings";
 
 const Page = () => {
+  // const initialState = useSettings();
   const steps = [
     {
       title: "Step 1",

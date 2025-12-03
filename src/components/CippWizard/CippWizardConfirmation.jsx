@@ -30,6 +30,7 @@ export const CippWizardConfirmation = (props) => {
     "RAWJson",
     "TemplateList",
     "addrow",
+    "billMonth"
   ];
 
   // Filter out null values and undefined values which could be from hidden conditional fields

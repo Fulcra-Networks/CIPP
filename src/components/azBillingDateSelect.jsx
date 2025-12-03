@@ -19,7 +19,7 @@ export const DateSelect = (props) => {
     onNextStep,
     onPreviousStep
   } = props;
-
+  
   return (
     <Stack spacing={2}>
       <label>Select the month to execute billing for. Only the month and year will be used, so just select the first.</label>
