@@ -20,6 +20,7 @@ import { CopyAll, Delete, PlayArrow, AddBox, Edit, ContentCopy } from "@mui/icon
 const Page = () => {
 
   const tblSimpleCols = [
+    "Enabled",
     "Customer",
     "Billable",
     "Resource Group",
@@ -33,15 +34,28 @@ const Page = () => {
       icon: <Edit />,
       link: "/tools/azurebilling/managemapping/update?mappingId=[key]"
     },
-    {
+    {condition: (row) => row?.Enabled === true ,
       label: "Disable Mapping",
       type: "GET",
-      url: "/api/ExecDisableMapping",
-      icon: <Delete />,
+      url: "/api/ExecDisableBillingMapping",
       data: {
-        TemplateId: "GUID",
+        mappingId: "key",
+        action: "!disable"
       },
+      icon: <Delete />,
       confirmText: "Are you sure you want to disable this mapping?",
+      multiPost: false,
+    },
+    {condition: (row) => row?.Enabled === false ,
+      label: "Enable Mapping",
+      type: "GET",
+      url: "/api/ExecDisableBillingMapping",
+      data: {
+        mappingId: "key",
+        action: "!enable"
+      },
+      icon: <PlayArrow />,
+      confirmText: "Are you sure you want to enable this mapping?",
       multiPost: false,
     },
   ];
