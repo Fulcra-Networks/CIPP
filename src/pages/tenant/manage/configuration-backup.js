@@ -1,5 +1,7 @@
-import { Layout as DashboardLayout } from "/src/layouts/index.js";
-import { HeaderedTabbedLayout } from "/src/layouts/HeaderedTabbedLayout";
+import { Layout as DashboardLayout } from "../../../layouts/index.js";
+import { HeaderedTabbedLayout } from "../../../layouts/HeaderedTabbedLayout";
+import { useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import {
   Button,
   Box,
@@ -8,9 +10,12 @@ import {
   AlertTitle,
   Card,
   CardContent,
+  IconButton,
   Stack,
   Skeleton,
   Chip,
+  CircularProgress,
+  Drawer,
 } from "@mui/material";
 import { Grid } from "@mui/system";
 import {
@@ -23,35 +28,55 @@ import {
   CheckCircle,
   Cancel,
   Delete,
+  Sync,
+  CloudDownload,
+  Visibility,
+  Close,
 } from "@mui/icons-material";
-import { useSettings } from "/src/hooks/use-settings";
-import { ApiGetCall } from "/src/api/ApiCall";
-import { CippPropertyListCard } from "/src/components/CippCards/CippPropertyListCard";
-import { CippBackupScheduleDrawer } from "/src/components/CippComponents/CippBackupScheduleDrawer";
-import { CippRestoreBackupDrawer } from "/src/components/CippComponents/CippRestoreBackupDrawer";
-import { CippApiDialog } from "/src/components/CippComponents/CippApiDialog";
-import { CippTimeAgo } from "/src/components/CippComponents/CippTimeAgo";
-import { useDialog } from "/src/hooks/use-dialog";
+import { useSettings } from "../../../hooks/use-settings";
+import { ApiGetCall, ApiPostCall } from "../../../api/ApiCall";
+import { CippPropertyListCard } from "../../../components/CippCards/CippPropertyListCard";
+import { CippBackupScheduleDrawer } from "../../../components/CippComponents/CippBackupScheduleDrawer";
+import { CippRestoreBackupDrawer } from "../../../components/CippComponents/CippRestoreBackupDrawer";
+import { CippApiDialog } from "../../../components/CippComponents/CippApiDialog";
+import { CippTimeAgo } from "../../../components/CippComponents/CippTimeAgo";
+import { CippFormTenantSelector } from "../../../components/CippComponents/CippFormTenantSelector";
+import CippJsonView from "../../../components/CippFormPages/CippJSONView";
+import { useDialog } from "../../../hooks/use-dialog";
 import ReactTimeAgo from "react-time-ago";
 import tabOptions from "./tabOptions.json";
 import { useRouter } from "next/router";
-import { CippHead } from "/src/components/CippComponents/CippHead";
+import { CippHead } from "../../../components/CippComponents/CippHead";
 
 const Page = () => {
   const router = useRouter();
   const { templateId } = router.query;
   const settings = useSettings();
   const removeDialog = useDialog();
+  const tenantFilterForm = useForm({ defaultValues: { tenantFilter: null } });
+  const backupTenantFilter = useWatch({ control: tenantFilterForm.control, name: "tenantFilter" });
+  // Prioritize URL query parameter, then fall back to settings
+  const currentTenant = router.query.tenantFilter || settings.currentTenant;
+
+  const downloadAction = ApiPostCall({
+    urlFromData: true,
+  });
+
+  // State to track drawer and backup preview data
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedBackup, setSelectedBackup] = useState(null);
+  const [backupContent, setBackupContent] = useState(null);
+  const [isLoadingBackup, setIsLoadingBackup] = useState(false);
 
   // API call to get backup files
   const backupList = ApiGetCall({
     url: "/api/ExecListBackup",
     data: {
-      tenantFilter: settings.currentTenant,
+      tenantFilter: currentTenant,
       Type: "Scheduled",
       NameOnly: true,
     },
-    queryKey: `BackupList-${settings.currentTenant}`,
+    queryKey: `BackupList-${currentTenant}`,
   });
 
   // API call to get existing backup configuration/schedule
@@ -61,7 +86,7 @@ const Page = () => {
       showHidden: true,
       Type: "New-CIPPBackup",
     },
-    queryKey: `BackupTasks-${settings.currentTenant}`,
+    queryKey: `BackupTasks-${currentTenant}`,
   });
 
   // Use the actual backup files as the backup data
@@ -77,19 +102,98 @@ const Page = () => {
     return ["Configuration"];
   };
 
-  const backupDisplayItems = filteredBackupData.map((backup, index) => ({
+  const handleDownloadBackup = (backup) => {
+    downloadAction.mutate(
+      {
+        url: `/api/ExecListBackup?BackupName=${backup.name}&Type=Scheduled`,
+        data: {
+          tenantFilter: backup.tenantSource,
+        },
+      },
+      {
+        onSuccess: (data) => {
+          const jsonString = data?.data?.[0]?.Backup;
+          if (!jsonString) {
+            console.error("No backup data returned");
+            return;
+          }
+
+          const blob = new Blob([jsonString], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${backup.name}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        },
+      },
+    );
+  };
+
+  const handleOpenBackupPreview = (backup) => {
+    setSelectedBackup(backup);
+    setDrawerOpen(true);
+    setIsLoadingBackup(true);
+    setBackupContent(null);
+
+    // Load backup data
+    downloadAction.mutate(
+      {
+        url: `/api/ExecListBackup?BackupName=${backup.name}&Type=Scheduled`,
+        data: {
+          tenantFilter: backup.tenantSource,
+        },
+      },
+      {
+        onSuccess: (data) => {
+          const jsonString = data?.data?.[0]?.Backup;
+          if (jsonString) {
+            try {
+              const parsedData = JSON.parse(jsonString);
+              setBackupContent(parsedData);
+            } catch (error) {
+              console.error("Failed to parse backup data:", error);
+            }
+          }
+          setIsLoadingBackup(false);
+        },
+        onError: () => {
+          setIsLoadingBackup(false);
+        },
+      },
+    );
+  };
+
+  const handleCloseDrawer = () => {
+    setDrawerOpen(false);
+    setSelectedBackup(null);
+    setBackupContent(null);
+  };
+
+  // Filter backup data by selected tenant if in AllTenants view
+  const tenantFilteredBackupData =
+    settings.currentTenant === "AllTenants" &&
+    backupTenantFilter &&
+    backupTenantFilter !== "AllTenants"
+      ? filteredBackupData.filter((backup) => backup.TenantFilter === backupTenantFilter)
+      : filteredBackupData;
+
+  const backupDisplayItems = tenantFilteredBackupData.map((backup, index) => ({
     id: backup.RowKey || index,
     name: backup.BackupName || "Unnamed Backup",
     timestamp: backup.Timestamp,
-    tenantSource: backup.BackupName?.includes("AllTenants")
-      ? "All Tenants"
-      : backup.BackupName?.replace("CIPP Backup - ", "") || settings.currentTenant,
+    tenantSource: backup.TenantFilter || settings.currentTenant,
     tags: generateBackupTags(backup),
   }));
 
   // Process existing backup configuration, find tenantFilter. by comparing settings.currentTenant with Tenant.value
   const currentConfig = Array.isArray(existingBackupConfig.data)
-    ? existingBackupConfig.data.find((tenant) => tenant.Tenant.value === settings.currentTenant)
+    ? existingBackupConfig.data.find(
+        (tenant) =>
+          tenant.Tenant.value === settings.currentTenant || tenant.Tenant.value === "AllTenants",
+      )
     : null;
   const hasExistingConfig = currentConfig && currentConfig.Parameters?.ScheduledBackupValues;
 
@@ -238,6 +342,15 @@ const Page = () => {
                     title="Backup Schedule Details"
                     propertyItems={configPropertyItems}
                     isFetching={existingBackupConfig.isFetching}
+                    actionButton={
+                      <IconButton
+                        onClick={existingBackupConfig.refetch}
+                        size="small"
+                        title="Refresh Configuration"
+                      >
+                        <Sync />
+                      </IconButton>
+                    }
                   />
                   <Card>
                     <CardContent>
@@ -279,13 +392,42 @@ const Page = () => {
 
           <Grid size={{ md: 6, xs: 12 }}>
             {/* Backup History */}
-            <Card sx={{ height: "100%" }}>
-              <CardContent>
-                <Stack spacing={3}>
-                  <Typography variant="h6" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <History color="primary" />
-                    Backup History
-                  </Typography>
+            <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+              <CardContent sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                <Stack
+                  spacing={3}
+                  sx={{ height: "100%", display: "flex", flexDirection: "column" }}
+                >
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                  >
+                    <Typography variant="h6" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <History color="primary" />
+                      Backup History
+                    </Typography>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      {settings.currentTenant === "AllTenants" && (
+                        <Box sx={{ minWidth: 250 }}>
+                          <CippFormTenantSelector
+                            formControl={tenantFilterForm}
+                            componentType="select"
+                            name="tenantFilter"
+                            type="single"
+                            required={false}
+                            disableClearable={false}
+                            allTenants={true}
+                          />
+                        </Box>
+                      )}
+                      <IconButton
+                        onClick={backupList.refetch}
+                        size="small"
+                        title="Refresh Backup History"
+                      >
+                        <Sync />
+                      </IconButton>
+                    </Stack>
+                  </Box>
 
                   <Typography variant="body2" color="text.secondary">
                     {settings.currentTenant === "AllTenants"
@@ -305,7 +447,7 @@ const Page = () => {
                       <Skeleton variant="rectangular" width="100%" height={200} />
                     </Stack>
                   ) : (
-                    <Box sx={{ maxHeight: "400px", overflowY: "auto" }}>
+                    <Box sx={{ maxHeight: "calc(100vh - 525px)", overflowY: "auto" }}>
                       <Stack spacing={2}>
                         {backupDisplayItems.map((backup) => (
                           <Card key={backup.id} variant="outlined">
@@ -322,7 +464,7 @@ const Page = () => {
                                     <Typography variant="h6" sx={{ fontSize: "1rem" }}>
                                       {(() => {
                                         const match = backup.name.match(
-                                          /.*_(\d{4}-\d{2}-\d{2})-(\d{2})(\d{2})/
+                                          /.*_(\d{4}-\d{2}-\d{2})-(\d{2})(\d{2})/,
                                         );
                                         return match
                                           ? `${match[1]} @ ${match[2]}:${match[3]}`
@@ -332,10 +474,34 @@ const Page = () => {
                                     <Typography variant="body2" color="text.secondary">
                                       <ReactTimeAgo date={backup.timestamp} />
                                     </Typography>
+                                    {settings.currentTenant === "AllTenants" && (
+                                      <Chip
+                                        label={`Tenant: ${backup.tenantSource}`}
+                                        size="small"
+                                        sx={{ mt: 1 }}
+                                        variant="outlined"
+                                      />
+                                    )}
                                   </Box>
                                   <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      startIcon={<Visibility />}
+                                      onClick={() => handleOpenBackupPreview(backup)}
+                                    >
+                                      Preview
+                                    </Button>
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      startIcon={<CloudDownload />}
+                                      onClick={() => handleDownloadBackup(backup)}
+                                    >
+                                      Download
+                                    </Button>
                                     <CippRestoreBackupDrawer
-                                      buttonText="Restore Backup"
+                                      buttonText="Restore"
                                       backupName={backup.name}
                                       backupData={backup}
                                       size="small"
@@ -343,17 +509,6 @@ const Page = () => {
                                       startIcon={<SettingsBackupRestore />}
                                     />
                                   </Stack>
-                                </Box>
-                                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
-                                  {backup.tags.map((tag, idx) => (
-                                    <Chip
-                                      key={idx}
-                                      label={tag}
-                                      size="small"
-                                      variant="outlined"
-                                      sx={{ fontSize: "0.7rem", height: "20px" }}
-                                    />
-                                  ))}
                                 </Box>
                               </Stack>
                             </CardContent>
@@ -369,6 +524,51 @@ const Page = () => {
         </Grid>
       </Box>
 
+      {/* Backup Preview Drawer */}
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={handleCloseDrawer}
+        PaperProps={{
+          sx: {
+            width: { xs: "100%", sm: "80%", md: "60%" },
+          },
+        }}
+      >
+        <Box sx={{ p: 3 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+            <Typography variant="h5">
+              Backup Preview
+              {selectedBackup && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  {(() => {
+                    const match = selectedBackup.name.match(
+                      /.*_(\d{4}-\d{2}-\d{2})-(\d{2})(\d{2})/,
+                    );
+                    return match ? `${match[1]} @ ${match[2]}:${match[3]}` : selectedBackup.name;
+                  })()}
+                </Typography>
+              )}
+            </Typography>
+            <IconButton onClick={handleCloseDrawer}>
+              <Close />
+            </IconButton>
+          </Stack>
+          {isLoadingBackup ? (
+            <Box sx={{ display: "flex", justifyContent: "center", p: 5 }}>
+              <CircularProgress />
+            </Box>
+          ) : backupContent ? (
+            <CippJsonView object={backupContent} title="Backup Contents" defaultOpen={true} />
+          ) : (
+            <Alert severity="error">
+              <AlertTitle>Failed to Load Backup</AlertTitle>
+              Unable to load backup contents. Please try again.
+            </Alert>
+          )}
+        </Box>
+      </Drawer>
+
       {/* Remove Backup Schedule Dialog */}
       <CippApiDialog
         createDialog={removeDialog}
@@ -380,7 +580,10 @@ const Page = () => {
           confirmText:
             "Are you sure you want to remove this backup schedule? This will stop automatic backups but won't delete existing backup files.",
         }}
-        relatedQueryKeys={[`BackupTasks-${settings.currentTenant}`, `BackupList-${settings.currentTenant}`]}
+        relatedQueryKeys={[
+          `BackupTasks-${settings.currentTenant}`,
+          `BackupList-${settings.currentTenant}`,
+        ]}
         onSuccess={() => {
           // Refresh both queries when a backup schedule is removed
           setTimeout(() => {

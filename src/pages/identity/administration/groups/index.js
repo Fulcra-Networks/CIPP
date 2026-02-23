@@ -1,8 +1,8 @@
 import { Button } from "@mui/material";
-import { CippTablePage } from "/src/components/CippComponents/CippTablePage.jsx";
-import { Layout as DashboardLayout } from "/src/layouts/index.js";
+import { CippTablePage } from "../../../../components/CippComponents/CippTablePage.jsx";
+import { Layout as DashboardLayout } from "../../../../layouts/index.js";
 import Link from "next/link";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { TrashIcon, EyeIcon } from "@heroicons/react/24/outline";
 import {
   Visibility,
   VisibilityOff,
@@ -26,6 +26,13 @@ const Page = () => {
     setShowMembers(!showMembers);
   };
   const actions = [
+    {
+      label: "View Group",
+      link: `/identity/administration/groups/group?groupId=[id]&tenantFilter=${currentTenant}`,
+      color: "info",
+      icon: <EyeIcon />,
+      multiPost: false,
+    },
     {
       //tested
       label: "Edit Group",
@@ -287,6 +294,11 @@ const Page = () => {
       "mailEnabled",
       "securityEnabled",
       "visibility",
+      "assignedLicenses",
+      "licenseProcessingState.state",
+      "onPremisesSamAccountName",
+      "membershipRule",
+      "onPremisesSyncEnabled",
     ],
     actions: actions,
   };
@@ -320,11 +332,11 @@ const Page = () => {
         "mailNickname",
         "groupType",
         "assignedLicenses",
+        "licenseProcessingState.state",
         "visibility",
         "onPremisesSamAccountName",
         "membershipRule",
         "onPremisesSyncEnabled",
-        "userPrincipalName",
       ]}
     />
   );

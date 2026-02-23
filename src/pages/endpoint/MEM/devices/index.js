@@ -1,7 +1,10 @@
-import { Layout as DashboardLayout } from "/src/layouts/index.js";
-import { CippTablePage } from "/src/components/CippComponents/CippTablePage.jsx";
-import { useSettings } from "/src/hooks/use-settings";
+import { Layout as DashboardLayout } from "../../../../layouts/index.js";
+import { CippTablePage } from "../../../../components/CippComponents/CippTablePage.jsx";
+import { CippApiDialog } from "../../../../components/CippComponents/CippApiDialog.jsx";
+import { useSettings } from "../../../../hooks/use-settings";
+import { useDialog } from "../../../../hooks/use-dialog.js";
 import { EyeIcon } from "@heroicons/react/24/outline";
+import { Box, Button } from "@mui/material";
 import {
   Sync,
   RestartAlt,
@@ -22,8 +25,16 @@ import {
 const Page = () => {
   const pageTitle = "Devices";
   const tenantFilter = useSettings().currentTenant;
+  const depSyncDialog = useDialog();
 
   const actions = [
+    {
+      label: "View Device",
+      link: `/endpoint/MEM/devices/device?deviceId=[id]`,
+      color: "info",
+      icon: <EyeIcon />,
+      multiPost: false,
+    },
     {
       label: "View in Intune",
       link: `https://intune.microsoft.com/${tenantFilter}/#view/Microsoft_Intune_Devices/DeviceSettingsMenuBlade/~/overview/mdmDeviceId/[id]`,
@@ -168,6 +179,32 @@ const Page = () => {
       },
       condition: (row) => row.operatingSystem === "macOS",
       confirmText: "Are you sure you want to retrieve the FileVault key for [deviceName]?",
+    },
+    {
+      label: "Reset Passcode",
+      type: "POST",
+      icon: <PasswordOutlined />,
+      url: "/api/ExecDevicePasscodeAction",
+      data: {
+        GUID: "id",
+        Action: "resetPasscode",
+      },
+      condition: (row) => row.operatingSystem === "Android",
+      confirmText:
+        "Are you sure you want to reset the passcode for [deviceName]? A new passcode will be generated and displayed.",
+    },
+    {
+      label: "Remove Passcode",
+      type: "POST",
+      icon: <Password />,
+      url: "/api/ExecDevicePasscodeAction",
+      data: {
+        GUID: "id",
+        Action: "resetPasscode",
+      },
+      condition: (row) => row.operatingSystem === "iOS",
+      confirmText:
+        "Are you sure you want to remove the passcode from [deviceName]? This will remove the device passcode requirement.",
     },
     {
       label: "Windows Defender Full Scan",
@@ -347,31 +384,52 @@ const Page = () => {
     actions: actions,
   };
 
+  const simpleColumns = [
+    "deviceName",
+    "userPrincipalName",
+    "complianceState",
+    "manufacturer",
+    "model",
+    "operatingSystem",
+    "osVersion",
+    "enrolledDateTime",
+    "managedDeviceOwnerType",
+    "deviceEnrollmentType",
+    "joinType",
+  ];
+
   return (
-    <CippTablePage
-      title={pageTitle}
-      apiUrl="/api/ListGraphRequest"
-      apiData={{
-        Endpoint: "deviceManagement/managedDevices",
-      }}
-      apiDataKey="Results"
-      actions={actions}
-      queryKey={`MEMDevices-${tenantFilter}`}
-      offCanvas={offCanvas}
-      simpleColumns={[
-        "deviceName",
-        "userPrincipalName",
-        "complianceState",
-        "manufacturer",
-        "model",
-        "operatingSystem",
-        "osVersion",
-        "enrolledDateTime",
-        "managedDeviceOwnerType",
-        "deviceEnrollmentType",
-        "joinType",
-      ]}
-    />
+    <>
+      <CippTablePage
+        title={pageTitle}
+        apiUrl="/api/ListGraphRequest"
+        apiData={{
+          Endpoint: "deviceManagement/managedDevices",
+        }}
+        apiDataKey="Results"
+        actions={actions}
+        queryKey={`MEMDevices-${tenantFilter}`}
+        offCanvas={offCanvas}
+        simpleColumns={simpleColumns}
+        cardButton={
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button onClick={depSyncDialog.handleOpen} startIcon={<Sync />}>
+              Sync DEP
+            </Button>
+          </Box>
+        }
+      />
+      <CippApiDialog
+        title="Sync DEP Tokens"
+        createDialog={depSyncDialog}
+        api={{
+          type: "POST",
+          url: "/api/ExecSyncDEP",
+          data: {},
+          confirmText: `Are you sure you want to sync Apple Device Enrollment Program (DEP) tokens? This will sync all DEP tokens for ${tenantFilter}. This may take several minutes to complete in the background, and can only be done every 15 minutes.`,
+        }}
+      />
+    </>
   );
 };
 
