@@ -1,8 +1,8 @@
-import { Layout as DashboardLayout } from "/src/layouts/index.js";
-import { CippWizardConfirmation } from "/src/components/CippWizard/CippWizardConfirmation";
-import CippWizardPage from "/src/components/CippWizard/CippWizardPage.jsx";
-import { DateSelect } from "/src/components/azBillingDateSelect.jsx";
-import { BillingReviewMapped, BillingReviewUnmapped } from "/src/components/billingreviewtables"
+import { Layout as DashboardLayout } from "../../../../layouts/index.js";
+import { CippWizardConfirmation } from "../../../../components/CippWizard/CippWizardConfirmation";
+import CippWizardPage from "../../../../components/CippWizard/CippWizardPage.jsx";
+import { DateSelect } from "../../../../components/azBillingDateSelect.jsx";
+import { BillingReviewMapped, BillingReviewUnmapped } from "../../../../components/billingreviewtables"
 // import { useSettings } from "../../../../hooks/use-settings";
 
 const Page = () => {

@@ -1,7 +1,7 @@
 import { Alert, InputAdornment, Typography, Button, SvgIcon } from "@mui/material";
 import { Save } from "@mui/icons-material";
-import CippFormComponent from "/src/components/CippComponents/CippFormComponent";
-import { CippFormCondition } from "/src/components/CippComponents/CippFormCondition";
+import CippFormComponent from "../CippComponents/CippFormComponent";
+import { CippFormCondition } from "../CippComponents/CippFormCondition";
 import { Grid } from "@mui/system";
 import { ApiGetCall } from "../../api/ApiCall";
 import { useSettings } from "../../hooks/use-settings";

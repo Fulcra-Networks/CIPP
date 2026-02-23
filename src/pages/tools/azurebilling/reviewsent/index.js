@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Layout as DashboardLayout } from "/src/layouts/index.js";
-import { CippTablePage } from "/src/components/CippComponents/CippTablePage.jsx";
+import { CippTablePage } from "../../../../components/CippComponents/CippTablePage.jsx";
 import {
   Grid,
   Button,
@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useForm } from "react-hook-form";
-import CippFormComponent from "/src/components/CippComponents/CippFormComponent";
+import CippFormComponent from "../../../../components/CippComponents/CippFormComponent";
 
 const apiUrl = "/api/ExecGetSentAzureCharges";
 const pageTitle = "Sent Azure Charges";

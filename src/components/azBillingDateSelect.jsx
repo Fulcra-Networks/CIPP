@@ -1,7 +1,7 @@
-import { CippFormComponent } from "/src/components/CippComponents/CippFormComponent";
+import { CippFormComponent } from "../components/CippComponents/CippFormComponent";
 import { useForm } from "react-hook-form";
 import { Stack } from "@mui/material";
-import { CippWizardStepButtons } from "/src/components/CippWizard/CippWizardStepButtons";
+import { CippWizardStepButtons } from "../components/CippWizard/CippWizardStepButtons";
 
 
 export const DateSelect = (props) => {  

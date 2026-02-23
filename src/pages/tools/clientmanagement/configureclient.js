@@ -12,17 +12,17 @@ import {
 import { Grid } from "@mui/system";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { ApiGetCall, ApiPostCall, ApiGetCallWithPagination } from "/src/api/ApiCall";
-import { Layout as DashboardLayout } from "/src/layouts/index.js";
+import { ApiGetCall, ApiPostCall, ApiGetCallWithPagination } from "../../../api/ApiCall";
+import { Layout as DashboardLayout } from "../../../layouts/index.js";
 import { useRouter } from "next/router";
-import extensions from "/src/data/Extensions.json";
+import extensions from "../../../data/Extensions.json";
 import { useEffect } from "react";
-import { CippDataTable } from "/src/components/CippTable/CippDataTable";
+import { CippDataTable } from "../../../components/CippTable/CippDataTable";
 import { PlusSmallIcon, SparklesIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { CippFormTenantSelector } from "/src/components/CippComponents/CippFormTenantSelector";
+import { CippFormTenantSelector } from "../../../components/CippComponents/CippFormTenantSelector";
 import { Sync, SyncAlt } from "@mui/icons-material";
-import { CippFormComponent } from "/src/components/CippComponents/CippFormComponent";
-import { CippApiResults } from "/src/components/CippComponents/CippApiResults";
+import { CippFormComponent } from "../../../components/CippComponents/CippFormComponent";
+import { CippApiResults } from "../../../components/CippComponents/CippApiResults";
 import { useSettings } from "../../../hooks/use-settings";
 
 

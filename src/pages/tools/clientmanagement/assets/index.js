@@ -19,13 +19,13 @@ import {
 } from "@mui/material";
 import { Search, Close } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
-import { Layout as DashboardLayout } from "/src/layouts/index.js";
-import CippButtonCard from "/src/components/CippCards/CippButtonCard";
-import CippFormComponent from "/src/components/CippComponents/CippFormComponent";
-import { ApiGetCall  } from "/src/api/ApiCall";
-import { useSettings } from "/src/hooks/use-settings";
+import { Layout as DashboardLayout } from "../../../../layouts/index.js";
+import CippButtonCard from "../../../../components/CippCards/CippButtonCard";
+import CippFormComponent from "../../../../components/CippComponents/CippFormComponent";
+import { ApiGetCall  } from "../../../../api/ApiCall";
+import { useSettings } from "../../../../hooks/use-settings";
 import { useRouter } from "next/router";
-import { CippDataTable } from "/src/components/CippTable/CippDataTable";
+import { CippDataTable } from "../../../../components/CippTable/CippDataTable";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 

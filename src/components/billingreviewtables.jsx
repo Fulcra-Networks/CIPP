@@ -1,10 +1,10 @@
-import { CippFormComponent } from "/src/components/CippComponents/CippFormComponent";
+import { CippFormComponent } from "../components/CippComponents/CippFormComponent";
 import { useForm } from "react-hook-form";
 import { Alert, Stack, Skeleton, Typography, Button } from "@mui/material";
-import { CippWizardStepButtons } from "/src/components/CippWizard/CippWizardStepButtons";
-import { PropertyList } from "/src/components/property-list";
-import { CippDataTable } from "/src/components/CippTable/CippDataTable";
-import { PropertyListItem } from "/src/components/property-list-item";
+import { CippWizardStepButtons } from "../components/CippWizard/CippWizardStepButtons";
+import { PropertyList } from "../components/property-list";
+import { CippDataTable } from "../components/CippTable/CippDataTable";
+import { PropertyListItem } from "../components/property-list-item";
 import { useMemo, useState, useEffect } from "react";
 import { ApiGetCall } from "../api/ApiCall";
 
