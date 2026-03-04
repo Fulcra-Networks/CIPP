@@ -36,7 +36,7 @@ export const BillingConfirmation = (props) => {
         </Stack>
         <Divider />
         <PropertyList>
-          <PropertyListItem label="Billing Month" value={formValues.billingMonth} />
+          <PropertyListItem label="Usage Month" value={formValues.billingMonth} />
           <PropertyListItem label="Mapped Charges" value={formValues.totalToBill} />
           <PropertyListItem label="Unmapped Charges" value={formValues.totalUnmapped} />
           <PropertyListItem label="Rerun Job" value={formValues.rerunJob ? "Yes" : "No"} />
