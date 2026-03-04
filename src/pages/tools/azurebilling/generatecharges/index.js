@@ -1,12 +1,10 @@
 import { Layout as DashboardLayout } from "../../../../layouts/index.js";
-import { CippWizardConfirmation } from "../../../../components/CippWizard/CippWizardConfirmation";
 import CippWizardPage from "../../../../components/CippWizard/CippWizardPage.jsx";
 import { DateSelect } from "../../../../components/azBillingDateSelect.jsx";
 import { BillingReviewMapped, BillingReviewUnmapped } from "../../../../components/billingreviewtables"
-// import { useSettings } from "../../../../hooks/use-settings";
+import { BillingConfirmation } from "../../../../components/BillingConfirmation";
 
 const Page = () => {
-  // const initialState = useSettings();
   const steps = [
     {
       title: "Step 1",
@@ -26,7 +24,7 @@ const Page = () => {
     {
       title: "Step 4",
       description: "Confirmation",
-      component: CippWizardConfirmation,
+      component: BillingConfirmation,
     }
   ];
 

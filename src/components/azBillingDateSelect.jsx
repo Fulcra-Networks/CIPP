@@ -22,7 +22,7 @@ export const DateSelect = (props) => {
   
   return (
     <Stack spacing={2}>
-      <label>Select the month to execute billing for. Only the month and year will be used, so just select the first.</label>
+      <label>Select the month to bill usage for. Only the month and year will be used, so just select the first.</label>
       <CippFormComponent
         type="datePicker"
         name="billMonth"
@@ -30,7 +30,7 @@ export const DateSelect = (props) => {
         dateTimeType="date"
         formControl={formControl}
         validators={{
-          required: { value: true, message: "You must set a billing date." },
+          required: { value: true, message: "You must set a usage date." },
         }}
       />
       <CippFormComponent
