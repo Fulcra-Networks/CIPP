@@ -124,7 +124,7 @@ const Page = () => {
         },
       ],
       color: 'secondary',
-    }, F
+    },
     {
       label: "Delete Device",
       icon: <Delete />,
