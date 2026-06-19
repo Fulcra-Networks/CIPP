@@ -127,7 +127,6 @@ export const BillingReviewMapped = (props) => {
             useGrouping={true}
             useStickyFooter={true}
             defaultSorting={[{ id: 'customer', desc: false }]}
-            useGroupedColumns={['customer']}
             refreshFunction={billingMappedCall}
           />
         </>
@@ -249,7 +248,6 @@ export const BillingReviewUnmapped = (props) => {
             columns={unmappedColumns}
             useGrouping={true}
             useStickyFooter={true}
-            useGroupedColumns={['customer']}
             refreshFunction={unmappedChargesCall}
           />
         </>

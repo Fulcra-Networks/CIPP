@@ -361,6 +361,7 @@ export const CippDataTable = (props) => {
     useGroupedColumns = [],
     isInDialog = false,
     showBulkExportAction = true,
+    layoutMode = 'grid-no-grow',
   } = props
 
   // Create a map of column IDs to their filterType for quick lookup
@@ -874,7 +875,10 @@ export const CippDataTable = (props) => {
   )
 
   const table = useMaterialReactTable({
-    layoutMode: 'grid-no-grow',
+    layoutMode,
+    enableGrouping: groupingEnabled,
+    enableStickyFooter: stickyFooterEnabled,
+    groupedColumnMode: 'remove',
     enableRowVirtualization: true,
     enableColumnVirtualization: true,
     enableColumnResizing: true,
@@ -900,6 +904,13 @@ export const CippDataTable = (props) => {
     renderEmptyRowsFallback,
     onColumnVisibilityChange: setColumnVisibility,
     ...modeInfo,
+    // Merge grouping into modeInfo's initialState (which carries columnOrder,
+    // columnPinning, density, pagination). Spread modeInfo first so this wins,
+    // then re-apply those fields so grouping is added without clobbering them.
+    initialState: {
+      ...modeInfo.initialState,
+      grouping: groupedColumns,
+    },
     renderRowActionMenuItems,
     renderTopToolbar,
     sortingFns: SORTING_FNS,
