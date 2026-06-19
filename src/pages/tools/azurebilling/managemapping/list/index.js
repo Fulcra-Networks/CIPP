@@ -23,7 +23,7 @@ const Page = () => {
     "Enabled",
     "Customer",
     "Billable",
-    "Resource Group",
+    "ResourceGroup",
     "Contract",
     "Markup"
   ];
@@ -68,6 +68,7 @@ const Page = () => {
         actions={actions}
         apiUrl="/api/ListAzureBillingMappings"
         simpleColumns={tblSimpleCols}
+        layoutMode="grid"
       />
     </>
   );

@@ -99,54 +99,6 @@ const Page = () => {
     name: "user",
   });
 
-  // Watch navigation settings and apply immediately (device-local, no server save needed)
-  const watchedBookmarkSidebar = useWatch({
-    control: formcontrol.control,
-    name: "bookmarkSidebar",
-  });
-  const watchedBookmarkPopover = useWatch({
-    control: formcontrol.control,
-    name: "bookmarkPopover",
-  });
-  const watchedBookmarkReorderMode = useWatch({
-    control: formcontrol.control,
-    name: "bookmarkReorderMode",
-  });
-  const watchedCompactNav = useWatch({ control: formcontrol.control, name: "compactNav" });
-
-  useEffect(() => {
-    const updates = {};
-    if (
-      watchedBookmarkSidebar !== undefined &&
-      watchedBookmarkSidebar !== settings.bookmarkSidebar
-    ) {
-      updates.bookmarkSidebar = watchedBookmarkSidebar;
-    }
-    if (
-      watchedBookmarkPopover !== undefined &&
-      watchedBookmarkPopover !== settings.bookmarkPopover
-    ) {
-      updates.bookmarkPopover = watchedBookmarkPopover;
-    }
-    if (
-      watchedBookmarkReorderMode !== undefined &&
-      watchedBookmarkReorderMode !== settings.bookmarkReorderMode
-    ) {
-      updates.bookmarkReorderMode = watchedBookmarkReorderMode;
-    }
-    if (watchedCompactNav !== undefined && watchedCompactNav !== settings.compactNav) {
-      updates.compactNav = watchedCompactNav;
-    }
-    if (Object.keys(updates).length > 0) {
-      settings.handleUpdate(updates);
-    }
-  }, [
-    watchedBookmarkSidebar,
-    watchedBookmarkPopover,
-    watchedBookmarkReorderMode,
-    watchedCompactNav,
-  ]);
-
   // Update form when initial user type is determined
   useEffect(() => {
     if (initialUserType !== null && auth.data?.clientPrincipal?.userDetails) {
@@ -231,47 +183,47 @@ const Page = () => {
   const portalLinksConfig = [
     {
       name: "portalLinks.M365_Portal",
-      label: "M365 Portal",
+      label: "M365",
     },
     {
       name: "portalLinks.Exchange_Portal",
-      label: "Exchange Portal",
+      label: "Exchange",
     },
     {
       name: "portalLinks.Entra_Portal",
-      label: "Entra Portal",
+      label: "Entra",
     },
     {
       name: "portalLinks.Teams_Portal",
-      label: "Teams Portal",
+      label: "Teams",
     },
     {
       name: "portalLinks.Azure_Portal",
-      label: "Azure Portal",
+      label: "Azure",
     },
     {
       name: "portalLinks.Intune_Portal",
-      label: "Intune Portal",
+      label: "Intune",
     },
     {
       name: "portalLinks.SharePoint_Admin",
-      label: "SharePoint Admin",
+      label: "SharePoint",
     },
     {
       name: "portalLinks.Security_Portal",
-      label: "Security Portal",
+      label: "Security",
     },
     {
       name: "portalLinks.Compliance_Portal",
-      label: "Compliance Portal",
+      label: "Compliance",
     },
     {
       name: "portalLinks.Power_Platform_Portal",
-      label: "Power Platform Portal",
+      label: "Power Platform",
     },
     {
       name: "portalLinks.Power_BI_Portal",
-      label: "Power BI Portal",
+      label: "Power BI",
     },
   ];
 
@@ -362,7 +314,7 @@ const Page = () => {
                     <CippPropertyListCard
                       layout="two"
                       showDivider={false}
-                      title="Navigation Settings - Per Device (Local Storage)"
+                      title="Navigation Settings"
                       propertyItems={[
                         {
                           label: "Show Sidebar Bookmarks",
