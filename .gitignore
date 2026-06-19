@@ -36,3 +36,12 @@ app.log
 .*/rules
 AGENTS.md
 CLAUDE.md
+
+# jetbrains
+.idea
+
+# azurite
+__*
+AzuriteConfig
+# Claude/Cursor worktrees and local AI tooling
+.claude/
