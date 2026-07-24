@@ -65,6 +65,12 @@ export const CippSettingsSideBar = (props) => {
       // Table Filter Preferences
       persistFilters: formValues.persistFilters,
 
+      // Navigation Settings
+      bookmarkSidebar: formValues.bookmarkSidebar,
+      bookmarkPopover: formValues.bookmarkPopover,
+      bookmarkReorderMode: formValues.bookmarkReorderMode,
+      compactNav: formValues.compactNav,
+
       // Portal Links Configuration
       portalLinks: {
         M365_Portal: formValues.portalLinks?.M365_Portal,
@@ -98,6 +104,13 @@ export const CippSettingsSideBar = (props) => {
         RemoveMFADevices: formValues.offboardingDefaults?.RemoveMFADevices,
         RemoveTeamsPhoneDID: formValues.offboardingDefaults?.RemoveTeamsPhoneDID,
         ClearImmutableId: formValues.offboardingDefaults?.ClearImmutableId,
+        removeCalendarPermissions: formValues.offboardingDefaults?.removeCalendarPermissions,
+        DisableOneDriveSharing: formValues.offboardingDefaults?.DisableOneDriveSharing,
+        postExecution: {
+          psa: formValues.offboardingDefaults?.postExecution?.psa,
+          email: formValues.offboardingDefaults?.postExecution?.email,
+          webhook: formValues.offboardingDefaults?.postExecution?.webhook,
+        },
       },
     };
 

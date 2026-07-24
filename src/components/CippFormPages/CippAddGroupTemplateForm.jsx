@@ -3,6 +3,7 @@ import "@mui/material";
 import { Grid } from "@mui/system";
 import CippFormComponent from "../CippComponents/CippFormComponent";
 import { CippFormCondition } from "../CippComponents/CippFormCondition";
+import { CippFormLicenseSelector } from "../CippComponents/CippFormLicenseSelector";
 
 const CippAddGroupTemplateForm = (props) => {
   const { formControl } = props;
@@ -69,6 +70,21 @@ const CippAddGroupTemplateForm = (props) => {
       <CippFormCondition
         formControl={formControl}
         field="groupType"
+        compareType="is"
+        compareValue="generic"
+      >
+        <Grid size={{ xs: 12 }}>
+          <CippFormLicenseSelector
+            formControl={formControl}
+            name="licenses"
+            label="Licenses (optional)"
+            multiple={true}
+          />
+        </Grid>
+      </CippFormCondition>
+      <CippFormCondition
+        formControl={formControl}
+        field="groupType"
         compareType="isOneOf"
         compareValue={["distribution", "dynamicDistribution"]}
       >
@@ -77,6 +93,33 @@ const CippAddGroupTemplateForm = (props) => {
             type="switch"
             label="Let people outside the organization email the group"
             name="allowExternal"
+            formControl={formControl}
+          />
+        </Grid>
+      </CippFormCondition>
+      <CippFormCondition
+        formControl={formControl}
+        field="groupType"
+        compareType="isOneOf"
+        compareValue={["distribution", "security"]}
+      >
+        <Grid size={{ xs: 12 }}>
+          <CippFormComponent
+            type="textField"
+            label="Email Aliases"
+            placeholder="One alias per line, e.g. postmaster@%tenantfilter%"
+            name="aliases"
+            formControl={formControl}
+            multiline
+            rows={4}
+            fullWidth
+          />
+        </Grid>
+        <Grid size={{ xs: 12 }}>
+          <CippFormComponent
+            type="switch"
+            label="Hide this group from the Global Address List (GAL)"
+            name="hideFromGAL"
             formControl={formControl}
           />
         </Grid>
