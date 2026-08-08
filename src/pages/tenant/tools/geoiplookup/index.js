@@ -30,7 +30,7 @@ const Page = () => {
     },
     {
       label: "Add to Whitelist",
-      url: `/api/ExecAddTrustedIP`,
+      url: `/api/ExecAddTrustedIP${`?tenantFilter=${currentTenant}`}`,
       type: "POST",
       data: {
         IP: "RowKey",
@@ -43,7 +43,7 @@ const Page = () => {
     },
     {
       label: "Remove from Whitelist",
-      url: `/api/ExecAddTrustedIP`,
+      url: `/api/ExecAddTrustedIP${`?tenantFilter=${currentTenant}`}`,
       type: "POST",
       data: {
         IP: "RowKey",
@@ -62,22 +62,20 @@ const Page = () => {
 
   const handleAddToWhitelist = () => {
     addGeoIP.mutate({
-      url: `/api/ExecAddTrustedIP`,
+      url: `/api/ExecAddTrustedIP${`?tenantFilter=${currentTenant}`}`,
       data: {
         IP: ip,
         State: "Trusted",
-        tenantFilter: currentTenant,
       },
     });
   };
 
   const handleRemoveFromWhitelist = () => {
     addGeoIP.mutate({
-      url: `/api/ExecAddTrustedIP`,
+      url: `/api/ExecAddTrustedIP${`?tenantFilter=${currentTenant}`}`,
       data: {
         IP: ip,
         State: "NotTrusted",
-        tenantFilter: currentTenant,
       },
     });
   };
@@ -102,9 +100,9 @@ const Page = () => {
                     name="ipAddress"
                     type="textField"
                     validators={{
-                      validate: (value) => getCippValidator(value, "ip"),
+                      validate: (value) => getCippValidator(value, "ipAny"),
                     }}
-                    placeholder="Enter IP Address"
+                    placeholder="Enter IP Address (IPv4 or IPv6)"
                     required
                   />
                 </Grid>

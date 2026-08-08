@@ -47,6 +47,13 @@ export const CippTenantModeDeploy = (props) => {
     }
   }, [updateRefreshToken.isSuccess, formControl, addTenant.isSuccess]);
 
+  useEffect(() => {
+    if (partnerTenantInfo?.data?.authenticatedUserPrincipalName) {
+      formControl.setValue("GDAPAuth", true);
+      formControl.trigger("GDAPAuth");
+    }
+  }, [partnerTenantInfo?.data?.authenticatedUserPrincipalName, formControl]);
+
   return (
     <Stack spacing={2}>
       {/* Partner Tenant (GDAP) */}
@@ -56,13 +63,15 @@ export const CippTenantModeDeploy = (props) => {
             Partner Tenant
           </Typography>
           <Tooltip title="Refresh partner tenant information">
-            <IconButton
-              size="small"
-              onClick={() => partnerTenantInfo.refetch()}
-              disabled={partnerTenantInfo.isLoading}
-            >
-              <Sync fontSize="small" />
-            </IconButton>
+            <span>
+              <IconButton
+                size="small"
+                onClick={() => partnerTenantInfo.refetch()}
+                disabled={partnerTenantInfo.isLoading}
+              >
+                <Sync fontSize="small" />
+              </IconButton>
+            </span>
           </Tooltip>
         </Stack>
         <Typography variant="body2" sx={{ mt: 2, mb: 2 }}>
