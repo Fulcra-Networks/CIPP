@@ -1,4 +1,4 @@
-import { Layout as DashboardLayout } from "../../../../../layouts/index.js";
+import { Layout as DashboardLayout } from "../../../../../layouts";
 import { CippTablePage } from "../../../../../components/CippComponents/CippTablePage.jsx";
 import { CopyAll, Delete, PlayArrow, AddBox, Edit, ContentCopy } from "@mui/icons-material";
 
@@ -14,7 +14,7 @@ import { CopyAll, Delete, PlayArrow, AddBox, Edit, ContentCopy } from "@mui/icon
  *  markup=% markup
  *  rgName=Resource group the mapping applies to
  * }
- * @returns 
+ * @returns
  */
 
 const Page = () => {

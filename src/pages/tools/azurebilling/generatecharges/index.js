@@ -1,4 +1,4 @@
-import { Layout as DashboardLayout } from "../../../../layouts/index.js";
+import { Layout as DashboardLayout } from "../../../../layouts";
 import CippWizardPage from "../../../../components/CippWizard/CippWizardPage.jsx";
 import { DateSelect } from "../../../../components/azBillingDateSelect.jsx";
 import { BillingReviewMapped, BillingReviewUnmapped } from "../../../../components/billingreviewtables"
