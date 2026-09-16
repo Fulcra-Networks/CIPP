@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import CippFormPage from "../../../../../components/CippFormPages/CippFormPage";
-import { Layout as DashboardLayout } from "../../../../../layouts/index.js";
+import { Layout as DashboardLayout } from "../../../../../layouts";
 import { useForm, useWatch } from "react-hook-form";
 import { useSettings } from "../../../../../hooks/use-settings";
 import { useEffect } from "react";
@@ -22,13 +22,13 @@ const Page = () => {
     if (formValues) {
       const { userPrincipalName, usageLocation, ...restFields } = formValues.addedFields || {};
       let newFields = { ...restFields };
-      
+
       newFields.tenantFilter = mapSettingsDefaults.currentTenant;
 
       formControl.reset(newFields);
     }
   }, [formValues]);
-  
+
   return (
     <>
       <CippFormPage

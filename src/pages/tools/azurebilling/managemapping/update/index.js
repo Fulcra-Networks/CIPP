@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import CippFormPage from "../../../../../components/CippFormPages/CippFormPage";
-import { Layout as DashboardLayout } from "../../../../../layouts/index.js";
+import { Layout as DashboardLayout } from "../../../../../layouts";
 import { useForm, useWatch } from "react-hook-form";
 import { useSettings } from "../../../../../hooks/use-settings";
 import { useEffect } from "react";
@@ -32,7 +32,7 @@ const Page = () => {
 
 
   useEffect(() => {
-    if (billingMappingCall.isSuccess && billingMappingCall.data) {      
+    if (billingMappingCall.isSuccess && billingMappingCall.data) {
       formControl.setValue("azSubscriptionId", billingMappingCall.data.Subscription);
       formControl.setValue("psaBillingCode", billingMappingCall.data.billingcode);
       formControl.setValue("psaAppendGroup", billingMappingCall.data.appendGroup);

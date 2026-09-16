@@ -13,7 +13,7 @@ import { Grid } from "@mui/system";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { ApiGetCall, ApiPostCall, ApiGetCallWithPagination } from "../../../api/ApiCall";
-import { Layout as DashboardLayout } from "../../../layouts/index.js";
+import { Layout as DashboardLayout } from "../../../layouts";
 import { useRouter } from "next/router";
 import extensions from "../../../data/Extensions.json";
 import { useEffect } from "react";
@@ -51,9 +51,9 @@ const ConfigureClient = () => {
   });
 
   const listServices = ApiGetCall({
-    url: "/api/ListPSAServices",    
+    url: "/api/ListPSAServices",
     queryKey: `IntegrationPsaSvcMapping-${currentTenant}`,
-  });  
+  });
 
   const formControl = useForm({
     mode: "onChange",

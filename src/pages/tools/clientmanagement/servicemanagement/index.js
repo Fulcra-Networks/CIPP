@@ -23,7 +23,7 @@ import {
 } from "@mui/material";
 import { Search, Close } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
-import { Layout as DashboardLayout } from "../../../../layouts/index.js";
+import { Layout as DashboardLayout } from "../../../../layouts";
 import CippButtonCard from "../../../../components/CippCards/CippButtonCard";
 import CippFormComponent from "../../../../components/CippComponents/CippFormComponent";
 import { ApiGetCall } from "../../../../api/ApiCall";

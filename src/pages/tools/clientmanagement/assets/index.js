@@ -8,18 +8,18 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { 
+import {
   Grid,
-  Button, 
+  Button,
   Container,
-  Stack, 
-  Tooltip, 
+  Stack,
+  Tooltip,
   IconButton,
-  Typography  
+  Typography
 } from "@mui/material";
 import { Search, Close } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
-import { Layout as DashboardLayout } from "../../../../layouts/index.js";
+import { Layout as DashboardLayout } from "../../../../layouts";
 import CippButtonCard from "../../../../components/CippCards/CippButtonCard";
 import CippFormComponent from "../../../../components/CippComponents/CippFormComponent";
 import { ApiGetCall  } from "../../../../api/ApiCall";
@@ -39,7 +39,7 @@ const AssetManagement = () => {
     'Name',
     'SerialNumber'
   ]
- 
+
 
   const formControl = useForm({
     defaultValues: {
@@ -70,7 +70,7 @@ const AssetManagement = () => {
           <Typography variant="h6" gutterBottom>
             Matched assets (via rmmID on PSA asset)
           </Typography>
-          <Grid container spacing={2}>              
+          <Grid container spacing={2}>
           <Grid item xs={6} sm={6} md={4}>
             <CippFormComponent
               label="Assets in PSA"
@@ -90,7 +90,7 @@ const AssetManagement = () => {
             />
           </Grid>
             {/* Submit Button */}
-          <Grid item xs={12}>              
+          <Grid item xs={12}>
             <Button onClick={matchedDevs.refetch} variant="contained" color="primary" startIcon={<Search />}>
               Reload Tables
             </Button>
