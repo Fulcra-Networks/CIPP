@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { CippIcons } from '../../utils/icon-registry'
 import {
   Accordion,
   AccordionSummary,
@@ -13,16 +14,13 @@ import {
   Stack,
 } from '@mui/material'
 import { Grid } from '@mui/system'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { PropertyListItem } from '../property-list-item'
 import { PropertyList } from '../property-list'
 import { getCippTranslation } from '../../utils/get-cipp-translation'
 import { getCippFormatting } from '../../utils/get-cipp-formatting'
 import { CippCodeBlock } from '../CippComponents/CippCodeBlock'
-import { useIntuneCollection } from '../../hooks/use-intune-collection'
+import { useIntuneDefinitions } from '../../hooks/use-intune-collection'
+import { collectSettingDefinitionIds } from '../../utils/intune-setting-definition-ids'
 import { useGuidResolver } from '../../hooks/use-guid-resolver'
 import { useAdminTemplateDefinitions } from '../../hooks/use-admin-template-definitions'
 import {
@@ -32,6 +30,10 @@ import {
 } from '../../utils/intune-bind-helpers'
 
 const linkPattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<>)]+)/g
+
+// One shared reference for the nothing-to-resolve case, so useIntuneDefinitions is not handed a
+// fresh array on every render.
+const EMPTY_IDS = []
 
 const renderTextWithLinks = (text) => {
   if (!text) {
@@ -270,11 +272,15 @@ function CippJsonView({
     waiting: resolvedType === 'intune',
   })
 
-  const intuneCollection = useIntuneCollection()
-  const intuneCollectionMap = useMemo(
-    () => new Map((intuneCollection || []).filter((item) => item?.id).map((item) => [item.id, item])),
-    [intuneCollection]
+  // Only the setting definition ids this object references are requested, rather than the whole
+  // catalog. Drilldown levels are subtrees of `object`, so one walk covers every level.
+  const intuneDefinitionIds = useMemo(
+    () => (resolvedType === 'intune' ? Array.from(collectSettingDefinitionIds(object)) : EMPTY_IDS),
+    [object, resolvedType]
   )
+  const { getDefinition: getIntuneDefinition } = useIntuneDefinitions(intuneDefinitionIds, {
+    enabled: resolvedType === 'intune',
+  })
 
   const renderIntuneItems = (data) => {
     const items = []
@@ -295,7 +301,7 @@ function CippJsonView({
       return (
         settingDefinitions.find((definition) => definition?.id === settingDefinitionId) ||
         liveDefinitions.get(settingDefinitionId) ||
-        intuneCollectionMap.get(settingDefinitionId)
+        getIntuneDefinition(settingDefinitionId)
       )
     }
 
@@ -376,6 +382,9 @@ function CippJsonView({
             enterTouchDelay={0}
             leaveTouchDelay={8000}
             disableInteractive={false}
+            // Opts back out of the theme default: this one IS the description, and there is
+            // no other way to read it on a touch device.
+            disableTouchListener={false}
           >
             <IconButton
               aria-label={`Description for ${label}`}
@@ -383,7 +392,7 @@ function CippJsonView({
               sx={{ p: 0.25, color: 'text.secondary' }}
               onClick={(event) => event.stopPropagation()}
             >
-              <InfoOutlinedIcon fontSize="inherit" />
+              <CippIcons.InfoOutlined fontSize="inherit" />
             </IconButton>
           </Tooltip>
         </Box>
@@ -513,12 +522,16 @@ function CippJsonView({
                 {getStatusText(value.enabled)}
               </Typography>
               {categoryPath && (
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" sx={{
+                  color: "text.secondary"
+                }}>
                   {categoryPath}
                 </Typography>
               )}
               {!definition && definitionId && (
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" sx={{
+                  color: "text.secondary"
+                }}>
                   Definition ID: {definitionId}
                 </Typography>
               )}
@@ -732,7 +745,9 @@ function CippJsonView({
             key="added-loading"
             label="Administrative Template"
             value={
-              <Stack direction="row" spacing={1} alignItems="center">
+              <Stack direction="row" spacing={1} sx={{
+                alignItems: "center"
+              }}>
                 <CircularProgress size={16} />
                 <Typography variant="body2">Resolving administrative template settings...</Typography>
               </Stack>
@@ -1001,10 +1016,16 @@ function CippJsonView({
       onChange={() => setAccordionOpen(!accordionOpen)}
     >
       <AccordionSummary
-        expandIcon={<ExpandMoreIcon />}
+        expandIcon={<CippIcons.ExpandMore />}
         sx={{ display: 'flex', alignItems: 'center' }}
       >
-        <Stack direction="row" spacing={1} alignItems="space-between" sx={{ width: '100%' }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: "space-between",
+            width: '100%'
+          }}>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>
@@ -1017,7 +1038,7 @@ function CippJsonView({
       </AccordionSummary>
       <AccordionDetails>
         <IconButton onClick={toggleView} sx={{ ml: 1 }}>
-          {viewJson ? <VisibilityOffIcon /> : <VisibilityIcon />}
+          {viewJson ? <CippIcons.VisibilityOff /> : <CippIcons.Visibility />}
         </IconButton>
         {viewJson ? (
           <CippCodeBlock type="editor" code={JSON.stringify(cleanObject(object), null, 2)} />
@@ -1065,7 +1086,7 @@ function CippJsonView({
         )}
       </AccordionDetails>
     </Accordion>
-  )
+  );
 }
 
 export default CippJsonView

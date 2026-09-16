@@ -51,9 +51,7 @@ const CippAddGroupForm = (props) => {
           name="username"
           formControl={formControl}
           fullWidth
-          InputProps={{
-            endAdornment: <InputAdornment position="end">@</InputAdornment>,
-          }}
+          slotProps={{ input: { endAdornment: <InputAdornment position="end">@</InputAdornment> } }}
         />
       </Grid>
       <Grid size={{ md: 6, xs: 12 }}>
@@ -95,7 +93,6 @@ const CippAddGroupForm = (props) => {
             { label: "Security Group", value: "generic" },
             { label: "Microsoft 365 Group", value: "m365" },
             { label: "Dynamic Group", value: "dynamic" },
-            { label: "Dynamic Distribution Group", value: "dynamicdistribution" },
             { label: "Distribution List", value: "distribution" },
             { label: "Mail Enabled Security Group", value: "security" },
           ]}
@@ -134,8 +131,8 @@ const CippAddGroupForm = (props) => {
       <CippFormCondition
         formControl={formControl}
         field="groupType"
-        compareType="isOneOf"
-        compareValue={["distribution", "dynamicdistribution"]}
+        compareType="is"
+        compareValue="distribution"
       >
         <Grid size={{ xs: 12 }}>
           <CippFormComponent
