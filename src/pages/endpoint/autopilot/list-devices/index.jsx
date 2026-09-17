@@ -73,8 +73,6 @@ const Page = () => {
     },
     {
       label: "Rename Device",
-      icon: <Edit />,
-      label: 'Rename Device',
       icon: <CippIcons.Edit />,
       type: 'POST',
       url: '/api/ExecRenameAPDevice',
