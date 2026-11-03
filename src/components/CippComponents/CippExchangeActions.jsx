@@ -1,24 +1,17 @@
-﻿import { TrashIcon, MagnifyingGlassIcon, PlayCircleIcon } from "@heroicons/react/24/outline";
-import {
-  Archive,
-  MailOutline,
-  Visibility,
-  PhonelinkLock,
-  Key,
-  PostAdd,
-  Gavel,
-  Language,
-  Outbox,
-  NotificationImportant,
-  DataUsage,
-  MailLock,
-  SettingsEthernet,
-  CalendarMonth,
-  PersonAdd,
-  Email,
-} from "@mui/icons-material";
+﻿import { CippIcons } from "../../utils/icon-registry"
 import { useSettings } from "../../hooks/use-settings.js";
 import { useMemo } from "react";
+import { MfaVerifyForm } from "./CippMfaVerifyForm";
+import { CippSharedMailboxLicenseAlert } from "./CippSharedMailboxLicenseAlert";
+import CippMailboxCustomAttributeRows, {
+  canEditMailboxCustomAttributes,
+} from "./CippMailboxCustomAttributeRows";
+import timezoneList from "../../data/timezoneList.json";
+
+const timezoneOptions = timezoneList.map((tz) => ({
+  label: `${tz.standardTime} - ${tz.timezone}`,
+  value: tz.standardTime,
+}));
 
 export const CippExchangeActions = () => {
   const tenant = useSettings().currentTenant;
@@ -46,7 +39,7 @@ export const CippExchangeActions = () => {
       label: "Bulk Add Mailbox Permissions",
       type: "POST",
       url: "/api/ExecModifyMBPerms",
-      icon: <PersonAdd />,
+      icon: <CippIcons.PersonAdd />,
       data: {
         userID: "UPN",
       },
@@ -147,13 +140,13 @@ export const CippExchangeActions = () => {
       label: "Edit permissions",
       link: "/identity/administration/users/user/exchange?userId=[ExternalDirectoryObjectId]",
       color: "info",
-      icon: <Key />,
+      icon: <CippIcons.Key />,
     },
     {
       label: "Research Compromised Account",
-      link: "/identity/administration/users/user/bec?userId=[ExternalDirectoryObjectId]",
+      link: "/identity/administration/bec/case?userId=[ExternalDirectoryObjectId]",
       color: "info",
-      icon: <MagnifyingGlassIcon />,
+      icon: <CippIcons.MagnifyingGlassIcon />,
     },
     {
       label: "Send MFA Push",
@@ -162,13 +155,14 @@ export const CippExchangeActions = () => {
       data: {
         UserEmail: "UPN",
       },
-      confirmText: "Are you sure you want to send an MFA request to [UPN]?",
-      icon: <PhonelinkLock />,
+      children: ({ formHook, row }) => <MfaVerifyForm formControl={formHook} row={row} />,
+      confirmText: "Send an MFA request to [UPN]?",
+      icon: <CippIcons.PhonelinkLock />,
     },
     {
       label: "Convert Mailbox",
       type: "POST",
-      icon: <Email />,
+      icon: <CippIcons.Email />,
       url: "/api/ExecConvertMailbox",
       data: { ID: "UPN" },
       fields: [
@@ -184,6 +178,7 @@ export const CippExchangeActions = () => {
           ],
           validators: { required: "Please select a mailbox type" },
         },
+        { name: "sharedMailboxLicenseWarning", component: CippSharedMailboxLicenseAlert },
       ],
       confirmText:
         "Pick the type of mailbox you want to convert [UPN] of mailbox type [recipientTypeDetails] to:",
@@ -192,9 +187,9 @@ export const CippExchangeActions = () => {
     {
       label: "Enable Online Archive",
       type: "POST",
-      icon: <Archive />,
+      icon: <CippIcons.Archive />,
       url: "/api/ExecEnableArchive",
-      data: { ID: "Id", username: "UPN" },
+      data: { ID: "ExchangeGuid", username: "UPN" },
       confirmText: "Are you sure you want to enable the online archive for [UPN]?",
       multiPost: false,
       condition: (row) => row.ArchiveGuid === "00000000-0000-0000-0000-000000000000",
@@ -203,7 +198,7 @@ export const CippExchangeActions = () => {
       label: "Set Retention Policy",
       type: "POST",
       url: "/api/ExecSetMailboxRetentionPolicies",
-      icon: <MailLock />,
+      icon: <CippIcons.MailLock />,
       confirmText: "Set the specified retention policy for selected mailboxes?",
       multiPost: false,
       fields: [
@@ -246,19 +241,19 @@ export const CippExchangeActions = () => {
     {
       label: "Enable Auto-Expanding Archive",
       type: "POST",
-      icon: <PostAdd />,
+      icon: <CippIcons.PostAdd />,
       url: "/api/ExecEnableAutoExpandingArchive",
-      data: { ID: "Id", username: "UPN" },
+      data: { ID: "ExchangeGuid", username: "UPN" },
       confirmText:
         "Are you sure you want to enable auto-expanding archive for [UPN]? The archive must already be enabled.",
       multiPost: false,
       condition: (row) => row.ArchiveGuid !== "00000000-0000-0000-0000-000000000000",
     },
     {
-      label: "Set Global Address List visibility",
+      label: "Set Global Address List Visibility",
       type: "POST",
       url: "/api/ExecHideFromGAL",
-      icon: <Visibility />,
+      icon: <CippIcons.EyeIcon />,
       data: {
         ID: "UPN",
       },
@@ -266,7 +261,7 @@ export const CippExchangeActions = () => {
         {
           type: "radio",
           name: "HidefromGAL",
-          label: "Global Address List visibility",
+          label: "Global Address List Visibility",
           options: [
             { label: "Hidden", value: true },
             { label: "Shown", value: false },
@@ -281,7 +276,7 @@ export const CippExchangeActions = () => {
       label: "Start Managed Folder Assistant",
       type: "POST",
       url: "/api/ExecStartManagedFolderAssistant",
-      icon: <PlayCircleIcon />,
+      icon: <CippIcons.PlayCircleIcon />,
       data: {
         ID: "ExchangeGuid",
         UserPrincipalName: "UPN",
@@ -291,7 +286,7 @@ export const CippExchangeActions = () => {
     {
       label: "Delete Mailbox",
       type: "POST",
-      icon: <TrashIcon />,
+      icon: <CippIcons.Delete />,
       url: "/api/RemoveUser",
       data: { ID: "UPN" },
       confirmText: "Are you sure you want to delete [UPN]?",
@@ -300,7 +295,7 @@ export const CippExchangeActions = () => {
     {
       label: "Set Copy Sent Items for Delegated Mailboxes",
       type: "POST",
-      icon: <MailOutline />,
+      icon: <CippIcons.MailOutlined />,
       condition: (row) =>
         row.recipientTypeDetails === "UserMailbox" || row.recipientTypeDetails === "SharedMailbox",
       url: "/api/ExecCopyForSent",
@@ -323,9 +318,9 @@ export const CippExchangeActions = () => {
       label: "Set Litigation Hold",
       type: "POST",
       url: "/api/ExecSetLitigationHold",
-      data: { UPN: "UPN", Identity: "Id" },
+      data: { UPN: "UPN", Identity: "ExchangeGuid" },
       confirmText: "What do you want to set the Litigation Hold to?",
-      icon: <Gavel />,
+      icon: <CippIcons.Gavel />,
       condition: (row) => row.LicensedForLitigationHold === true,
       fields: [
         {
@@ -345,9 +340,9 @@ export const CippExchangeActions = () => {
       label: "Set Retention Hold",
       type: "POST",
       url: "/api/ExecSetRetentionHold",
-      data: { UPN: "UPN", Identity: "Id" },
+      data: { UPN: "UPN", Identity: "ExchangeGuid" },
       confirmText: "What do you want to set Retention Hold to?",
-      icon: <MailLock />,
+      icon: <CippIcons.MailLock />,
       fields: [
         {
           type: "switch",
@@ -360,9 +355,9 @@ export const CippExchangeActions = () => {
       label: "Set Mailbox Locale",
       type: "POST",
       url: "/api/ExecSetMailboxLocale",
-      data: { user: "UPN", ProhibitSendQuota: true },
+      data: { user: "UPN" },
       confirmText: "Enter a locale, e.g. en-US",
-      icon: <Language />,
+      icon: <CippIcons.Language />,
       fields: [
         {
           label: "Locale",
@@ -374,12 +369,76 @@ export const CippExchangeActions = () => {
       ],
     },
     {
+      label: "Migrate Calendar Time Zone",
+      type: "POST",
+      url: "/api/ExecCalendarTimeZoneMigration",
+      data: { UPN: "UPN", Identity: "ExchangeGuid" },
+      confirmText:
+        "Move [UPN] to a new time zone? This sets the mailbox and working hours time zone, then moves the future meetings this mailbox organises to the new time zone at the same local time. Attendees receive a meeting update.",
+      icon: <CippIcons.Schedule />,
+      fields: [
+        {
+          type: "autoComplete",
+          name: "FromTimeZone",
+          label: "Current time zone",
+          multiple: false,
+          creatable: false,
+          options: timezoneOptions,
+          validators: { required: "Please select the current time zone" },
+        },
+        {
+          type: "autoComplete",
+          name: "ToTimeZone",
+          label: "New time zone",
+          multiple: false,
+          creatable: false,
+          options: timezoneOptions,
+          validators: { required: "Please select the new time zone" },
+        },
+      ],
+    },
+    {
+      label: "Set Custom Attributes",
+      type: "POST",
+      url: "/api/ExecSetMailboxCustomAttributes",
+      data: { userid: "UPN", Identity: "ExchangeGuid" },
+      confirmText:
+        "Set the selected custom attributes on [UPN]? Empty values clear that attribute; unlisted attributes are left unchanged.",
+      icon: <CippIcons.Edit />,
+      condition: (row) => canEditMailboxCustomAttributes(row),
+      fields: [
+        {
+          name: "attributeRows",
+          component: CippMailboxCustomAttributeRows,
+        },
+      ],
+      customDataformatter: (rows, action, formData) => {
+        const mailboxArray = (Array.isArray(rows) ? rows : [rows]).filter((mailbox) =>
+          canEditMailboxCustomAttributes(mailbox)
+        );
+        const attrs = {};
+        (formData.attributeRows || []).forEach((row) => {
+          const attrName = row?.attribute?.value ?? row?.attribute;
+          if (attrName) {
+            attrs[attrName] = row?.value ?? "";
+          }
+        });
+
+        return mailboxArray.map((mailbox) => ({
+          tenantFilter: mailbox.Tenant || mailbox.tenantFilter || tenant,
+          userid: mailbox.UPN || mailbox.UserPrincipalName,
+          Identity: mailbox.ExchangeGuid,
+          ...attrs,
+        }));
+      },
+    },
+    {
       label: "Set Max Send/Receive Size",
       type: "POST",
       url: "/api/ExecSetMailboxEmailSize",
       data: { UPN: "UPN", id: "ExternalDirectoryObjectId" },
       confirmText: "Enter a size in from 1 to 150. Leave blank to not change.",
-      icon: <SettingsEthernet />,
+      icon: <CippIcons.SettingsEthernet />,
       fields: [
         {
           label: "Send Size(MB)",
@@ -401,7 +460,7 @@ export const CippExchangeActions = () => {
       url: "/api/ExecSetMailboxQuota",
       data: { user: "UPN", ProhibitSendQuota: true },
       confirmText: "Enter a quota. e.g. 1000MB, 10GB,1TB",
-      icon: <Outbox />,
+      icon: <CippIcons.Outbox />,
       fields: [
         {
           label: "Quota",
@@ -421,7 +480,7 @@ export const CippExchangeActions = () => {
         ProhibitSendReceiveQuota: true,
       },
       confirmText: "Enter a quota. e.g. 1000MB, 10GB,1TB",
-      icon: <DataUsage />,
+      icon: <CippIcons.DataUsage />,
       fields: [
         {
           label: "Quota",
@@ -438,7 +497,7 @@ export const CippExchangeActions = () => {
       url: "/api/ExecSetMailboxQuota",
       data: { user: "UPN", IssueWarningQuota: true },
       confirmText: "Enter a quota. e.g. 1000MB, 10GB,1TB",
-      icon: <NotificationImportant />,
+      icon: <CippIcons.NotificationImportant />,
       fields: [
         {
           label: "Quota",
@@ -455,7 +514,7 @@ export const CippExchangeActions = () => {
       url: "/api/ExecSetCalendarProcessing",
       data: { UPN: "UPN" },
       confirmText: "Configure calendar processing settings for [UPN]",
-      icon: <CalendarMonth />,
+      icon: <CippIcons.CalendarIcon />,
       condition: (row) =>
         row.recipientTypeDetails === "RoomMailbox" ||
         row.recipientTypeDetails === "EquipmentMailbox",

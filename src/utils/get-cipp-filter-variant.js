@@ -1,5 +1,53 @@
 import { getCippUniqueLicenses } from "./get-cipp-unique-licenses";
 
+// Named (not inline) so it can be registered under a string key in CippDataTable's
+// filterFns — an inline function here leaves MRT unable to resolve a "Filter Mode" label.
+export const licenseIncludesFilterFn = (row, columnId, filterValue) => {
+  const userLicenses = row.original.assignedLicenses;
+  if (!filterValue || !Array.isArray(filterValue) || filterValue.length === 0) {
+    return true;
+  }
+
+  const hasNoLicenseFilter = filterValue.includes("__no_license__");
+  const otherFilters = filterValue.filter((v) => v !== "__no_license__");
+  const isUnlicensed = !userLicenses || !Array.isArray(userLicenses) || userLicenses.length === 0;
+
+  // If user selected "No Licenses Assigned" and this user is unlicensed → match
+  if (hasNoLicenseFilter && isUnlicensed) {
+    return true;
+  }
+
+  // If only "No Licenses Assigned" is selected and user has licenses → no match
+  if (hasNoLicenseFilter && otherFilters.length === 0 && !isUnlicensed) {
+    return false;
+  }
+
+  // Check other license filters
+  if (isUnlicensed) {
+    return false;
+  }
+
+  const userSkuIds = userLicenses.map((license) => license.skuId).filter(Boolean);
+  return otherFilters.some((selectedSkuId) => userSkuIds.includes(selectedSkuId));
+};
+
+// Compares the raw value, so the result never depends on how the cell text is formatted.
+export const booleanEqualsFilterFn = (row, columnId, filterValue) => {
+  const toBool = (value) => {
+    if (typeof value === "boolean") return value;
+    const text = String(value ?? "").toLowerCase();
+    if (text === "yes" || text === "true") return true;
+    if (text === "no" || text === "false") return false;
+    return null;
+  };
+  const raw = columnId.includes("@odata")
+    ? row.original?.[columnId]
+    : columnId.split(".").reduce((value, key) => value?.[key], row.original);
+  const expected = toBool(filterValue);
+  return expected !== null && toBool(raw) === expected;
+};
+booleanEqualsFilterFn.autoRemove = (value) => value === undefined || value === null || value === "";
+
 export const getCippFilterVariant = (providedColumnKeys, arg) => {
   // Back-compat + new options mode
   const isOptions =
@@ -50,20 +98,18 @@ export const getCippFilterVariant = (providedColumnKeys, arg) => {
         }));
       }
 
+      // Add "No Licenses Assigned" option at beginning
+      filterSelectOptions.unshift({
+        label: "No Licenses Assigned",
+        value: "__no_license__",
+      });
+
       return {
         filterVariant: "multi-select",
         sortingFn: "alphanumeric",
-        filterFn: (row, columnId, filterValue) => {
-          const userLicenses = row.original.assignedLicenses;
-          if (!filterValue || !Array.isArray(filterValue) || filterValue.length === 0) {
-            return true;
-          }
-          if (!userLicenses || !Array.isArray(userLicenses) || userLicenses.length === 0) {
-            return false;
-          }
-          const userSkuIds = userLicenses.map((license) => license.skuId).filter(Boolean);
-          return filterValue.some((selectedSkuId) => userSkuIds.includes(selectedSkuId));
-        },
+        // string name (registered in CippDataTable's FILTER_FNS) so MRT can resolve a
+        // "Filter Mode" label — an inline function here can't be looked up by name.
+        filterFn: "licenseIncludes",
         filterSelectOptions: filterSelectOptions,
       };
     case "accountEnabled":
@@ -91,12 +137,27 @@ export const getCippFilterVariant = (providedColumnKeys, arg) => {
         filterFn: "includes",
       };
   }
+  // Arrays of objects render as the "N items" button (see the object branch in
+  // get-cipp-formatting), so sort them by item count. Arrays of strings render as chips
+  // and keep the default text sort. The first non-empty array in the sample decides,
+  // because the first row may well hold an empty array.
+  const arraySample = (values ?? [sampleValue]).find(
+    (v) => Array.isArray(v) && v.length > 0,
+  );
+  if (
+    arraySample &&
+    arraySample.every((item) => item !== null && typeof item === "object" && !Array.isArray(item))
+  ) {
+    return { sortingFn: "arrayLength" };
+  }
+
   //Type based filters
   if (typeOf === "boolean") {
     return {
       filterVariant: "select",
       sortingFn: "boolean",
-      filterFn: "equals",
+      filterFn: "booleanEquals",
+      filterSelectOptions: ["Yes", "No"],
     };
   }
 
