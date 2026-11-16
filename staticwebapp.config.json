@@ -36,23 +36,52 @@
     },
     {
       "route": "/authredirect",
-      "allowedRoles": ["admin", "editor", "readonly", "authenticated", "anonymous"]
+      "allowedRoles": [
+        "admin",
+        "editor",
+        "readonly",
+        "authenticated",
+        "anonymous"
+      ]
     },
     {
       "route": "/LogoutRedirect",
-      "allowedRoles": ["admin", "editor", "readonly", "authenticated", "anonymous"]
+      "allowedRoles": [
+        "admin",
+        "editor",
+        "readonly",
+        "authenticated",
+        "anonymous"
+      ]
     },
     {
       "route": "/404",
-      "allowedRoles": ["admin", "editor", "readonly", "authenticated", "anonymous"]
+      "allowedRoles": [
+        "admin",
+        "editor",
+        "readonly",
+        "authenticated",
+        "anonymous"
+      ]
     },
     {
       "route": "/api/Public*",
-      "allowedRoles": ["admin", "editor", "readonly", "authenticated", "anonymous"]
+      "allowedRoles": [
+        "admin",
+        "editor",
+        "readonly",
+        "authenticated",
+        "anonymous"
+      ]
     },
     {
       "route": "*",
-      "allowedRoles": ["admin", "editor", "readonly", "authenticated"]
+      "allowedRoles": [
+        "admin",
+        "editor",
+        "readonly",
+        "authenticated"
+      ]
     }
   ],
   "navigationFallback": {
@@ -72,7 +101,10 @@
     "401": {
       "redirect": "/.auth/login/aad?prompt=select_account&post_login_redirect_uri=.referrer",
       "statusCode": 302,
-      "exclude": ["/assets/illustrations/*.{png,jpg,gif}", "/css/*"]
+      "exclude": [
+        "/assets/illustrations/*.{png,jpg,gif}",
+        "/css/*"
+      ]
     },
     "403": {
       "rewrite": "/403"
@@ -86,5 +118,12 @@
   },
   "mimeTypes": {
     ".json": "text/json"
+  },
+  "networking": {
+    "allowedIpRanges": [
+      "146.70.159.170/32",
+      "76.155.131.39/32",
+      "98.38.184.242/24"
+    ]
   }
 }
