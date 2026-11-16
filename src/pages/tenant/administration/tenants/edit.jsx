@@ -57,6 +57,8 @@ const Page = () => {
       const defaultOffboardingValues = {
         ConvertToShared: false,
         RemoveGroups: false,
+        RemoveGroupOwnership: false,
+        RemoveRoles: false,
         HideFromGAL: false,
         RemoveLicenses: false,
         removeCalendarInvites: false,
@@ -110,6 +112,8 @@ const Page = () => {
     const defaultOffboardingValues = {
       ConvertToShared: false,
       RemoveGroups: false,
+      RemoveGroupOwnership: false,
+      RemoveRoles: false,
       HideFromGAL: false,
       RemoveLicenses: false,
       removeCalendarInvites: false,
@@ -300,6 +304,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout usesTenant={false}>{page}</DashboardLayout>;
 
 export default Page;

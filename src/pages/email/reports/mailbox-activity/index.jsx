@@ -62,7 +62,6 @@ const Page = () => {
     data: {
       Endpoint: `reports/getEmailActivityUserDetail(period='${selectedPeriod}')`,
       $format: "application/json",
-      Sort: "userPrincipalName",
     },
     queryKey: `MailboxActivity-${selectedPeriod}`,
     dataKey: "Results",
@@ -150,9 +149,9 @@ const Page = () => {
       apiData={{
         Endpoint: `reports/getEmailActivityUserDetail(period='${selectedPeriod}')`,
         $format: "application/json",
-        Sort: "userPrincipalName",
       }}
       apiDataKey="Results"
+      defaultSorting={[{ id: "userPrincipalName", desc: false }]}
       queryKey={`MailboxActivity-${selectedPeriod}`}
       simpleColumns={[
         "userPrincipalName",
@@ -171,6 +170,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout tenantGroupSupport={true}>{page}</DashboardLayout>;
 
 export default Page;

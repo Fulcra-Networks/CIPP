@@ -6,6 +6,7 @@ import CippJsonView from "../../../../components/CippFormPages/CippJSONView";
 import { CippCADeployDrawer } from "../../../../components/CippComponents/CippCADeployDrawer";
 import { CippApiLogsDrawer } from "../../../../components/CippComponents/CippApiLogsDrawer";
 import { CippCAPolicyCoverageDrawer } from "../../../../components/CippComponents/CippCAPolicyCoverageDrawer";
+import { CippCAPolicyImpactDrawer } from "../../../../components/CippComponents/CippCAPolicyImpactDrawer";
 import { PermissionButton } from "../../../../utils/permissions";
 import { useSettings } from "../../../../hooks/use-settings.js";
 
@@ -46,6 +47,25 @@ const Page = () => {
       },
     },
     {
+      label: "See usage report",
+      icon: <CippIcons.BarChart />,
+      color: "info",
+      hideBulk: true,
+      multiPost: false,
+      customComponent: (row, { drawerVisible, setDrawerVisible }) => {
+        const policy = Array.isArray(row) ? row[0] : row;
+        return (
+          <CippCAPolicyImpactDrawer
+            policyId={policy?.id}
+            policyName={policy?.displayName}
+            tenantFilter={policy?.Tenant || tenant}
+            visible={!!drawerVisible}
+            onClose={() => setDrawerVisible(false)}
+          />
+        );
+      },
+    },
+    {
       label: "Create template based on policy",
       type: "POST",
       url: "/api/AddCATemplate",
@@ -59,6 +79,45 @@ const Page = () => {
       confirmText: `Are you sure you want to create a template based on "[displayName]"?`,
       icon: <CippIcons.Book />,
       color: "info",
+    },
+    {
+      label: "Duplicate Policy",
+      type: "POST",
+      url: "/api/AddCAPolicyClone",
+      data: {
+        ID: "id",
+      },
+      multiPost: false,
+      hideBulk: true,
+      icon: <CippIcons.DocumentDuplicateIcon />,
+      color: "info",
+      fields: [
+        {
+          type: "textField",
+          name: "newDisplayName",
+          label: "New Display Name",
+          validators: { required: "Please enter a name for the duplicated policy" },
+        },
+        {
+          type: "autoComplete",
+          name: "state",
+          label: "State",
+          multiple: false,
+          creatable: false,
+          options: [
+            { label: "Disabled", value: "disabled" },
+            { label: "Report-only", value: "enabledForReportingButNotEnforced" },
+            { label: "Enabled", value: "enabled" },
+            { label: "Same as source", value: "sameAsSource" },
+          ],
+        },
+      ],
+      defaultvalues: (row) => ({
+        newDisplayName: row?.displayName ? `${row.displayName} - Copy` : "",
+        state: { label: "Disabled", value: "disabled" },
+      }),
+      confirmText:
+        "Enter a name for the duplicated policy. The name must not match any existing policy in the tenant.",
     },
     {
       label: "Change Display Name",
@@ -205,5 +264,5 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout allTenantsSupport={true}>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout tenantGroupSupport={true} allTenantsSupport={true}>{page}</DashboardLayout>;
 export default Page;

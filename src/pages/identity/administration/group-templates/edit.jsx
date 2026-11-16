@@ -60,7 +60,8 @@ const Page = () => {
         resetForm={false}
         queryKey={[`ListGroupTemplates`, `GroupTemplate-${id}`]}
         formControl={formControl}
-        title="Edit Group Template"
+        title="Group Template"
+        formPageType="Edit"
         backButtonTitle="Group Overview"
         postUrl="/api/AddGroupTemplate"
         isFetching={isFetching}
@@ -77,6 +78,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout usesTenant={false}>{page}</DashboardLayout>;
 
 export default Page;

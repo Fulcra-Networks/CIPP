@@ -29,7 +29,7 @@ const AddPolicy = () => {
     <CippFormPage
       formControl={formControl}
       queryKey="AddTransportRule"
-      title="Add Spamfilter Rule"
+      title="Spamfilter Rule"
       backButtonTitle="Spamfilter Overview"
       postUrl="/api/AddSpamFilter"
     >
@@ -84,6 +84,6 @@ const AddPolicy = () => {
   );
 };
 
-AddPolicy.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+AddPolicy.getLayout = (page) => <DashboardLayout usesTenant={false}>{page}</DashboardLayout>;
 
 export default AddPolicy;

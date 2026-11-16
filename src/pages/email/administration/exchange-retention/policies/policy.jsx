@@ -78,7 +78,7 @@ const RetentionPolicy = () => {
     <CippFormPage
       formControl={formControl}
       queryKey={isEdit ? `RetentionPolicy-${name}` : "AddRetentionPolicy"}
-      title={isEdit ? `Edit Retention Policy: ${name}` : "Add Retention Policy"}
+      title={isEdit ? `Retention Policy: ${name}` : "Retention Policy"}
       backButtonTitle="Retention Policies"
       formPageType={isEdit ? "Edit" : "Add"}
       postUrl="/api/ExecManageRetentionPolicies"
@@ -146,6 +146,6 @@ const RetentionPolicy = () => {
   );
 };
 
-RetentionPolicy.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+RetentionPolicy.getLayout = (page) => <DashboardLayout usesTenant={false}>{page}</DashboardLayout>;
 
 export default RetentionPolicy;

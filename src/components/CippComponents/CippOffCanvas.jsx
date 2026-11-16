@@ -161,7 +161,7 @@ export const CippOffCanvas = (props) => {
           sx={{
             display: "flex",
             flexDirection: "column",
-            height: "calc(100vh - 73px)", // Account for header + divider
+            flexGrow: 1, // The Drawer paper is a flex column; fill whatever the header leaves
             minHeight: 0,
           }}
         >
@@ -174,7 +174,12 @@ export const CippOffCanvas = (props) => {
               minHeight: 0,
             }}
           >
-            <Grid container spacing={1} sx={{ flexGrow: 1 }}>
+            <Grid
+              container
+              spacing={1}
+              // stretched rows would split the spare height into a gap under the info card
+              sx={{ flexGrow: 1, alignContent: infoCard && children ? "flex-start" : undefined }}
+            >
               {actionsPosition !== "bottom" && infoCard}
               <Grid
                 size={{ xs: 12 }}
@@ -206,6 +211,8 @@ export const CippOffCanvas = (props) => {
                 p: 2,
                 flexShrink: 0,
                 mt: "auto",
+                maxHeight: "50vh",
+                overflowY: "auto",
               }}
             >
               {footer}

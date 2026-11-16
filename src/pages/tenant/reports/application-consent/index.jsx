@@ -12,6 +12,7 @@ const Page = () => {
     syncTitle: "Sync Consented Applications",
     allowToggle: true,
     defaultCached: true,
+    serverPagination: true,
   });
 
   const simpleColumns = [
@@ -29,6 +30,8 @@ const Page = () => {
       <CippTablePage
         title={pageTitle}
         apiUrl={reportDB.resolvedApiUrl}
+        apiData={reportDB.resolvedApiData}
+        apiDataKey={reportDB.apiDataKey}
         queryKey={reportDB.resolvedQueryKey}
         simpleColumns={simpleColumns}
         dataSourceControls={reportDB.controls}
@@ -38,6 +41,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout allTenantsSupport={true}>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout tenantGroupSupport={true} allTenantsSupport={true}>{page}</DashboardLayout>;
 
 export default Page;

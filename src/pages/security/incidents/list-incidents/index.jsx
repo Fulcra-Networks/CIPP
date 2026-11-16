@@ -134,6 +134,17 @@ const Page = () => {
   // Define actions for incidents
   const actions = [
     {
+      label: 'View in Defender',
+      link: '[IncidentUrl]',
+      pinned: true,
+      icon: <CippIcons.Launch />,
+      color: 'info',
+      target: '_blank',
+      multiPost: false,
+      external: true,
+      condition: (row) => Boolean(row?.IncidentUrl),
+    },
+    {
       label: 'Assign to self',
       type: 'POST',
       icon: <CippIcons.PersonAdd />,
@@ -262,6 +273,6 @@ const Page = () => {
   )
 }
 
-Page.getLayout = (page) => <DashboardLayout allTenantsSupport={true}>{page}</DashboardLayout>
+Page.getLayout = (page) => <DashboardLayout tenantGroupSupport={true} allTenantsSupport={true}>{page}</DashboardLayout>
 
 export default Page

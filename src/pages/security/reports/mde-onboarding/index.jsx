@@ -24,6 +24,7 @@ import { CippPropertyListCard } from "../../../../components/CippCards/CippPrope
 import { getCippFormatting } from "../../../../utils/get-cipp-formatting";
 import { useState } from "react";
 import { useCippReportDB } from "../../../../components/CippComponents/CippReportDBControls";
+import { isMultiTenant, tenantScope } from "../../../../utils/tenant-selection";
 
 const statusColors = {
   enabled: "success",
@@ -59,7 +60,7 @@ const SingleTenantView = ({ tenant }) => {
   const { data, isFetching } = ApiGetCall({
     url: "/api/ListMDEOnboarding",
     queryKey: `MDEOnboarding-${tenant}`,
-    data: { tenantFilter: tenant, UseReportDB: true },
+    data: { ...tenantScope(tenant), UseReportDB: true },
     waiting: true,
   });
 
@@ -326,7 +327,7 @@ const SingleTenantView = ({ tenant }) => {
 
 const Page = () => {
   const currentTenant = useSettings().currentTenant;
-  const isAllTenants = currentTenant === "AllTenants";
+  const isAllTenants = isMultiTenant(currentTenant);
 
   const reportDB = useCippReportDB({
     apiUrl: "/api/ListMDEOnboarding",
@@ -335,6 +336,7 @@ const Page = () => {
     syncTitle: "Sync MDE Onboarding Status",
     allowToggle: false,
     defaultCached: true,
+    serverPagination: true,
   });
 
   if (!isAllTenants) {
@@ -347,6 +349,7 @@ const Page = () => {
         title="MDE Onboarding Status"
         apiUrl={reportDB.resolvedApiUrl}
         apiData={reportDB.resolvedApiData}
+        apiDataKey={reportDB.apiDataKey}
         queryKey={reportDB.resolvedQueryKey}
         simpleColumns={[
           "Tenant",
@@ -370,6 +373,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout tenantGroupSupport={true}>{page}</DashboardLayout>;
 
 export default Page;

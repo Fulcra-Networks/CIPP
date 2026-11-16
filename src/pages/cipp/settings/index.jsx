@@ -7,11 +7,14 @@ import tabOptions from "./tabOptions";
 import CippVersionProperties from "../../../components/CippSettings/CippVersionProperties";
 import CippPasswordSettings from "../../../components/CippSettings/CippPasswordSettings";
 import CippDnsSettings from "../../../components/CippSettings/CippDnsSettings";
+import CippDomainExclusionSettings from "../../../components/CippSettings/CippDomainExclusionSettings";
 import CippCacheSettings from "../../../components/CippSettings/CippCacheSettings";
 import CippBackupSettings from "../../../components/CippSettings/CippBackupSettings";
 import CippBackupRetentionSettings from "../../../components/CippSettings/CippBackupRetentionSettings";
 import CippLogRetentionSettings from "../../../components/CippSettings/CippLogRetentionSettings";
 import CippJitAdminSettings from "../../../components/CippSettings/CippJitAdminSettings";
+import CippBecRemediationSettings from "../../../components/CippSettings/CippBecRemediationSettings";
+import CippBaselineExpirySettings from "../../../components/CippSettings/CippBaselineExpirySettings";
 const Page = () => {
   return (
     <Container sx={{ pt: { xs: 0, md: 3 }, px: { xs: 1.5, md: 3 } }} maxWidth="xl">
@@ -26,6 +29,9 @@ const Page = () => {
           <CippDnsSettings />
         </Grid>
         <Grid size={{ lg: 4, md: 6, sm: 12, xs: 12 }}>
+          <CippDomainExclusionSettings />
+        </Grid>
+        <Grid size={{ lg: 4, md: 6, sm: 12, xs: 12 }}>
           <CippCacheSettings />
         </Grid>
         <Grid size={{ lg: 4, md: 6, sm: 12, xs: 12 }}>
@@ -38,7 +44,22 @@ const Page = () => {
           <CippLogRetentionSettings />
         </Grid>
         <Grid size={{ lg: 4, md: 6, sm: 12, xs: 12 }}>
+          <CippLogRetentionSettings
+            title="Report Attachment Retention"
+            endpoint="ExecReportAttachmentRetentionConfig"
+            defaultDays={90}
+            maxDays={180}
+            description="Configure how long generated Report Builder reports and their PDFs are kept, along with scheduled report attachments too large to email (over 4MB), which are uploaded to storage and linked from the email instead. Download links stop working once their files are deleted."
+          />
+        </Grid>
+        <Grid size={{ lg: 4, md: 6, sm: 12, xs: 12 }}>
           <CippJitAdminSettings />
+        </Grid>
+        <Grid size={{ lg: 4, md: 6, sm: 12, xs: 12 }}>
+          <CippBecRemediationSettings />
+        </Grid>
+        <Grid size={{ lg: 4, md: 6, sm: 12, xs: 12 }}>
+          <CippBaselineExpirySettings />
         </Grid>
       </Grid>
     </Container>
@@ -46,7 +67,7 @@ const Page = () => {
 };
 
 Page.getLayout = (page) => (
-  <DashboardLayout>
+  <DashboardLayout usesTenant={false}>
     <TabbedLayout tabOptions={tabOptions}>{page}</TabbedLayout>
   </DashboardLayout>
 );

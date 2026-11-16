@@ -4,7 +4,15 @@ import { Layout as DashboardLayout } from '../../../../layouts/index'
 import tabOptions from './tabOptions'
 import { useSecureScore } from '../../../../hooks/use-securescore'
 import { CippInfoBar } from '../../../../components/CippCards/CippInfoBar'
-import { Box, Button, Chip, Container, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Chip,
+  Container,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material'
 import { Grid } from '@mui/system'
 import { CippChartCard } from '../../../../components/CippCards/CippChartCard'
 import TimeAgo from 'javascript-time-ago'
@@ -15,9 +23,13 @@ import { useDialog } from '../../../../hooks/use-dialog'
 import { useState } from 'react'
 import { CippTableDialog } from '../../../../components/CippComponents/CippTableDialog'
 import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
-import { AllTenantsSecureScoreSummary } from '../../../../components/CippAllTenants/AllTenantsSecureScore'
+import {
+  AllTenantsSecureScoreSummary,
+  AllTenantsSecureScoreTable,
+} from '../../../../components/CippAllTenants/AllTenantsSecureScore'
 import { useSettings } from '../../../../hooks/use-settings'
 import { useRouter } from 'next/navigation'
+import { isMultiTenant } from '../../../../utils/tenant-selection'
 
 const Page = () => {
   const currentTenant = useSettings().currentTenant
@@ -28,6 +40,9 @@ const Page = () => {
   const cippTableDialog = useDialog()
   const [filterAnchorEl, setFilterAnchorEl] = useState(null)
   const [selectedFilter, setSelectedFilter] = useState('all')
+  const [sortAnchorEl, setSortAnchorEl] = useState(null)
+  const [selectedSort, setSelectedSort] = useState('gain')
+  const [chartMode, setChartMode] = useState('percent')
   const router = useRouter()
   const timeAgo = new TimeAgo('en-US')
 
@@ -57,25 +72,41 @@ const Page = () => {
 
     const controlScores = secureScore.translatedData.controlScores || []
 
+    let filtered
     switch (selectedFilter) {
       case 'completed':
-        return controlScores.filter((score) => score.scoreInPercentage === 100)
+        filtered = controlScores.filter((score) => score.scoreInPercentage === 100)
+        break
       case 'zero':
-        return controlScores.filter((score) => score.scoreInPercentage === 0)
+        filtered = controlScores.filter((score) => score.scoreInPercentage === 0)
+        break
       case 'started':
-        return controlScores.filter(
+        filtered = controlScores.filter(
           (score) => score.scoreInPercentage > 0 && score.scoreInPercentage < 100
         )
+        break
+      case 'incomplete':
+        filtered = controlScores.filter((score) => score.scoreInPercentage < 100)
+        break
       default:
-        return controlScores
+        filtered = controlScores
     }
+    return selectedSort === 'gain'
+      ? [...filtered].sort((a, b) => (b.pointsToGain ?? 0) - (a.pointsToGain ?? 0))
+      : filtered
   }
+
+  const sortOptions = [
+    { value: 'implemented', label: 'Implementation %' },
+    { value: 'gain', label: 'Points to gain' },
+  ]
 
   const filterOptions = [
     { value: 'all', label: 'All Recommendations' },
     { value: 'completed', label: 'Completed (100%)' },
     { value: 'zero', label: 'Not Started (0%)' },
     { value: 'started', label: 'In Progress (Started)' },
+    { value: 'incomplete', label: 'Not Completed (Started + Not Started)' },
   ]
   return (
     <Container
@@ -86,17 +117,47 @@ const Page = () => {
       maxWidth={false}
     >
       <Grid container spacing={2}>
-        {currentTenant === 'AllTenants' && (
+        {isMultiTenant(currentTenant) && (
           <Grid size={{ xs: 12 }}>
             <AllTenantsSecureScoreSummary />
           </Grid>
         )}
-        {currentTenant !== 'AllTenants' && (
+        {isMultiTenant(currentTenant) && (
+          <Grid size={{ xs: 12 }}>
+            <AllTenantsSecureScoreTable />
+          </Grid>
+        )}
+        {!isMultiTenant(currentTenant) && (
           <>
             <Grid
               size={{ md: 12, xs: 12 }}
-              sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}
+              sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mb: 2 }}
             >
+              <Button
+                variant="outlined"
+                startIcon={<CippIcons.Sort />}
+                onClick={(event) => setSortAnchorEl(event.currentTarget)}
+              >
+                Sort: {sortOptions.find((opt) => opt.value === selectedSort)?.label}
+              </Button>
+              <Menu
+                anchorEl={sortAnchorEl}
+                open={Boolean(sortAnchorEl)}
+                onClose={() => setSortAnchorEl(null)}
+              >
+                {sortOptions.map((option) => (
+                  <MenuItem
+                    key={option.value}
+                    selected={selectedSort === option.value}
+                    onClick={() => {
+                      setSelectedSort(option.value)
+                      setSortAnchorEl(null)
+                    }}
+                  >
+                    <ListItemText>{option.label}</ListItemText>
+                  </MenuItem>
+                ))}
+              </Menu>
               <Button variant="outlined" startIcon={<CippIcons.FilterList />} onClick={handleFilterClick}>
                 Filter: {filterOptions.find((opt) => opt.value === selectedFilter)?.label}
               </Button>
@@ -149,14 +210,28 @@ const Page = () => {
               <CippChartCard
                 isFetching={secureScore.isFetching}
                 title={'Secure Score'}
+                headerAction={
+                  <ToggleButtonGroup
+                    size="small"
+                    exclusive
+                    value={chartMode}
+                    onChange={(_, mode) => mode && setChartMode(mode)}
+                  >
+                    <ToggleButton value="percent">%</ToggleButton>
+                    <ToggleButton value="points">Points</ToggleButton>
+                  </ToggleButtonGroup>
+                }
                 chartSeries={
                   secureScore.secureScore.isSuccess
                     ? [
                         {
-                          name: 'Secure Score',
+                          name: chartMode === 'percent' ? 'Secure Score %' : 'Secure Score',
                           data: secureScore.secureScore.data.Results.map((data) => ({
                             x: timeAgo.format(new Date(data.createdDateTime)),
-                            y: data.currentScore,
+                            y:
+                              chartMode === 'percent'
+                                ? Math.round((data.currentScore / data.maxScore) * 10000) / 100
+                                : data.currentScore,
                           })).reverse(),
                         },
                       ]
@@ -166,7 +241,7 @@ const Page = () => {
               />
             </Grid>
 
-            {currentTenant !== 'AllTenants' &&
+            {!isMultiTenant(currentTenant) &&
               secureScore.isSuccess &&
               getFilteredControlScores().map((secureScoreControl) => (
                 <Grid size={{ md: 3, xs: 12 }} key={secureScoreControl.controlName}>
@@ -216,22 +291,36 @@ const Page = () => {
                     }
                   >
                     <Box sx={{ flexGrow: 1 }}>
-                      <Chip
-                        variant="outlined"
-                        label={`${secureScoreControl.scoreInPercentage}% ${
-                          secureScoreControl.controlStateUpdates?.[0]?.state === 'ThirdParty'
-                            ? '- Resolved by Third Party'
-                            : ''
-                        }`}
-                        size="small"
-                        color={
-                          secureScoreControl.scoreInPercentage === 100
-                            ? 'success'
-                            : secureScoreControl.scoreInPercentage > 50
-                              ? 'warning'
-                              : 'error'
-                        }
-                      />
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                        <Chip
+                          variant="outlined"
+                          label={`${secureScoreControl.scoreInPercentage}% ${
+                            secureScoreControl.controlStateUpdates?.[0]?.state === 'ThirdParty'
+                              ? '- Resolved by Third Party'
+                              : ''
+                          }`}
+                          size="small"
+                          color={
+                            secureScoreControl.scoreInPercentage === 100
+                              ? 'success'
+                              : secureScoreControl.scoreInPercentage > 50
+                                ? 'warning'
+                                : 'error'
+                          }
+                        />
+                        {secureScoreControl.pointsToGain != null && (
+                          <Chip
+                            variant="outlined"
+                            label={`+${Math.round(secureScoreControl.pointsToGain * 100) / 100} pts${
+                              secureScoreControl.percentToGain != null
+                                ? ` (+${secureScoreControl.percentToGain.toFixed(2)}% total)`
+                                : ''
+                            }`}
+                            size="small"
+                            color="info"
+                          />
+                        )}
+                      </Box>
 
                       {secureScoreControl.description && (
                         <>
@@ -332,6 +421,9 @@ const Page = () => {
                 {
                   type: 'autoComplete',
                   name: 'resolutionType',
+                  multiple: false,
+                  creatable: false,
+                  validators: { required: 'Please select a resolution type' },
                   options: [
                     {
                       value: 'ThirdParty',
@@ -352,6 +444,7 @@ const Page = () => {
                   type: 'textField',
                   name: 'reason',
                   label: 'Reason for change (Mandatory)',
+                  validators: { required: 'Please enter a reason for the change' },
                 },
               ]}
               api={{
@@ -372,7 +465,7 @@ const Page = () => {
 }
 
 Page.getLayout = (page) => (
-  <DashboardLayout>
+  <DashboardLayout tenantGroupSupport={true}>
     <TabbedLayout tabOptions={tabOptions}>{page}</TabbedLayout>
   </DashboardLayout>
 )

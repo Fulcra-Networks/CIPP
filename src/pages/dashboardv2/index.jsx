@@ -20,6 +20,7 @@ import { useSettings } from '../../hooks/use-settings'
 import { useIsMobileLayout } from '../../hooks/use-breakpoint'
 import { ApiGetCall } from '../../api/ApiCall.jsx'
 import { getFilteredPortals } from '../../utils/get-filtered-portals'
+import { useLoginHint } from '../../hooks/use-login-hint'
 import { CippIcons, getIconByName } from '../../utils/icon-registry'
 import { BulkActionsMenu } from '../../components/bulk-actions-menu'
 import { CippPageActionsFab } from '../../components/CippComponents/CippPageActionsFab'
@@ -36,18 +37,21 @@ import { TenantInfoCard } from '../../components/CippComponents/TenantInfoCard'
 import { TenantMetricsGrid } from '../../components/CippComponents/TenantMetricsGrid'
 import { AssessmentCard } from '../../components/CippComponents/AssessmentCard'
 import { AlertsOverviewCard } from '../../components/CippComponents/AlertsOverviewCard'
+import { ServiceHealthCard } from '../../components/CippComponents/ServiceHealthCard'
 import { CippReportToolbar } from '../../components/CippComponents/CippReportToolbar'
 import { CippHead } from '../../components/CippComponents/CippHead.jsx'
 import { AllTenantsDashboard } from '../../components/CippAllTenants/AllTenantsDashboard'
+import { isMultiTenant, tenantScope } from '../../utils/tenant-selection'
 
 const Page = () => {
   const settings = useSettings()
+  const withLoginHint = useLoginHint()
   const router = useRouter()
   const { currentTenant } = settings
   // The per-tenant cards below are all scoped to a single tenant's Graph data. Under AllTenants —
   // which is also the state on first login, before a tenant has been picked — swap in the
   // cross-tenant view rather than letting the layout render "Not supported".
-  const isAllTenants = !currentTenant || currentTenant === 'AllTenants'
+  const isAllTenants = !currentTenant || isMultiTenant(currentTenant)
   const [portalMenuItems, setPortalMenuItems] = useState([])
   const isWide = useMediaQuery('(min-width:1513px)')
   // Below md the Portals/Reports button row gives way to a bottom-right FAB sheet, and
@@ -76,7 +80,7 @@ const Page = () => {
   const organization = ApiGetCall({
     url: '/api/ListGraphRequest',
     queryKey: `${currentTenant}-ListGraphRequest-organization`,
-    data: { tenantFilter: currentTenant, Endpoint: 'organization' },
+    data: { ...tenantScope(currentTenant), Endpoint: 'organization' },
     waiting: !isAllTenants,
   })
 
@@ -84,7 +88,7 @@ const Page = () => {
 
   const testsApi = ApiGetCall({
     url: '/api/ListTests',
-    data: { tenantFilter: currentTenant, reportId: selectedReport },
+    data: { ...tenantScope(currentTenant), reportId: selectedReport },
     queryKey: `${currentTenant}-ListTests-${selectedReport}`,
     waiting: !isAllTenants && !!currentTenant && !!selectedReport,
   })
@@ -159,10 +163,11 @@ const Page = () => {
         target: '_blank',
         // A portal with a `field` has a URL the backend resolved for us (SharePoint's host cannot be
         // derived from the tenant). Use it when it's there, otherwise fall back to the templated URL.
-        link:
+        link: withLoginHint(
           portal.field && tenantLookup?.[portal.field]
             ? tenantLookup[portal.field]
-            : portal.url.replace(portal.variable, tenantLookup?.[portal.variable]),
+            : portal.url.replace(portal.variable, tenantLookup?.[portal.variable])
+        ),
         icon: portal.icon,
       }))
       setPortalMenuItems(menuItems)
@@ -172,6 +177,7 @@ const Page = () => {
     currentTenant,
     settings.portalLinks,
     settings.UserSpecificSettings,
+    withLoginHint,
   ])
 
   const formatNumber = (num) => {
@@ -346,7 +352,11 @@ const Page = () => {
         <Grid container spacing={2} sx={{ mb: 2 }}>
           {/* Column 1: Tenant Information */}
           <Grid size={{ xs: 12, lg: 4 }} data-tutorial="dashboard-tenant-info">
-            <TenantInfoCard data={organizationRecord} isLoading={organization.isFetching} />
+            <TenantInfoCard
+              data={organizationRecord}
+              isLoading={organization.isFetching}
+              tenantFilter={currentTenant}
+            />
           </Grid>
 
           {/* Column 2: Tenant Metrics - 2x3 Grid */}
@@ -368,10 +378,16 @@ const Page = () => {
           </Grid>
         </Grid>
 
-        {/* Alerts Section - Full Width */}
-        <Box sx={{ mb: 2 }} data-tutorial="dashboard-alerts">
-          <AlertsOverviewCard tenantFilter={currentTenant} />
-        </Box>
+        {/* Alerts + Microsoft service health. Grid items stretch, both cards are height: 100%,
+            so the pair stays level; below lg they stack. */}
+        <Grid container spacing={2} sx={{ mb: 2 }}>
+          <Grid size={{ xs: 12, lg: 8 }} data-tutorial="dashboard-alerts">
+            <AlertsOverviewCard tenantFilter={currentTenant} />
+          </Grid>
+          <Grid size={{ xs: 12, lg: 4 }}>
+            <ServiceHealthCard tenantFilter={currentTenant} />
+          </Grid>
+        </Grid>
 
         {/* Identity Section - 2 Column Grid */}
         <Box>
@@ -502,7 +518,7 @@ const Page = () => {
 // and the Identity / Devices / Custom tabs each render a cross-tenant view in that mode too.
 // Leaving the opt-out in place would make the layout render "Not supported" and never mount this page.
 Page.getLayout = (page) => (
-  <DashboardLayout>
+  <DashboardLayout tenantGroupSupport={true}>
     <TabbedLayout tabOptions={tabOptions}>{page}</TabbedLayout>
   </DashboardLayout>
 )

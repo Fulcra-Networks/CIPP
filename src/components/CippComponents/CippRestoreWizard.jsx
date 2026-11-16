@@ -30,6 +30,9 @@ import { useState, useEffect, useMemo } from "react";
 
 const TABLE_LABELS = {
   AppPermissions: "App Permissions",
+  BaselineRollouts: "Baselines",
+  Baselines: "Baseline Standards",
+  BaselineRolloutState: "Baseline Tenant Stages",
   CommunityRepos: "Community Repositories",
   Config: "CIPP Configuration",
   CustomPowershellScripts: "Custom PowerShell/Test Scripts",
@@ -47,7 +50,6 @@ const TABLE_LABELS = {
   WebhookRules: "Webhook Rules",
   "templates:AppApprovalTemplate": "App Approval Templates",
   "templates:AssignmentFilterTemplate": "Assignment Filter Templates",
-  "templates:BPATemplate": "BPA Templates",
   "templates:CATemplate": "Conditional Access Templates",
   "templates:ConnectionfilterTemplate": "Connection Filter Templates",
   "templates:ContactTemplate": "Contact Templates",

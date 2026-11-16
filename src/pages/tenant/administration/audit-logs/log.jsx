@@ -64,7 +64,7 @@ const Page = () => {
       if (data && data?.Data?.ActionUrl?.includes("identity/administration/ViewBec")) {
         data.Data.ActionUrl = data.Data.ActionUrl.replace(
           "identity/administration/ViewBec",
-          "identity/administration/users/user/bec"
+          "identity/administration/bec/case"
         );
         data.Data.ActionUrl = data.Data.ActionUrl.replace("tenantDomain", "tenantFilter");
       }
@@ -208,6 +208,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout usesTenant={false}>{page}</DashboardLayout>;
 
 export default Page;

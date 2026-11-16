@@ -11,6 +11,11 @@ import { CippFormCondition } from './CippFormCondition'
 import { CippApiResults } from './CippApiResults'
 import { useSettings } from '../../hooks/use-settings'
 import { CippFormTenantSelector } from './CippFormTenantSelector'
+import {
+  applyPickedGroups,
+  getGroupPickerField,
+  getSingleDeployTenant,
+} from './CippIntunePolicyActions'
 
 const assignmentFilterTypeOptions = [
   { label: 'Include - Apply policy to devices matching filter', value: 'include' },
@@ -65,6 +70,18 @@ export const CippPolicyDeployDrawer = ({
   const { isValid } = useFormState({ control: formControl.control })
   const tenantFilter = useSettings()?.currentTenant
   const selectedTenants = useWatch({ control: formControl.control, name: 'tenantFilter' }) || []
+  // With exactly one tenant selected, groups are picked by id from that tenant. Otherwise the
+  // name fields stay, since only names can span tenants.
+  const groupTenant = getSingleDeployTenant(selectedTenants)
+  const singleTenant = Boolean(groupTenant)
+  // A group selection is only valid for the tenant it was loaded from, and a stale name from
+  // the other mode must not ship either.
+  useEffect(() => {
+    formControl.setValue('groupTargets', [])
+    formControl.setValue('excludeGroupTargets', [])
+    formControl.setValue('customGroup', '')
+    formControl.setValue('excludeGroup', '')
+  }, [groupTenant, formControl])
   const CATemplates = ApiGetCall({ url: '/api/ListIntuneTemplates', queryKey: 'IntuneTemplates' })
   const [JSONData, setJSONData] = useState()
   const watcher = useWatch({ control: formControl.control, name: 'TemplateList' })
@@ -85,7 +102,6 @@ export const CippPolicyDeployDrawer = ({
   const deployPolicy = ApiPostCall({
     urlFromData: true,
     relatedQueryKeys: [
-      'IntuneTemplates',
       `Configuration Policies - ${tenantFilter}`,
       `Intune Compliance Policies - ${tenantFilter}`,
       `App Protection & Configuration Policies - ${tenantFilter}`,
@@ -99,7 +115,9 @@ export const CippPolicyDeployDrawer = ({
       return
     }
 
-    const formData = formControl.getValues()
+    const formData = singleTenant
+      ? applyPickedGroups(formControl.getValues())
+      : formControl.getValues()
     const assignmentFilterName = formData?.assignmentFilter?.value || null
     const assignmentFilterType = assignmentFilterName
       ? formData?.assignmentFilterType || 'include'
@@ -107,12 +125,6 @@ export const CippPolicyDeployDrawer = ({
     console.log('Submitting form data:', formData)
     deployPolicy.mutate({
       url: '/api/AddPolicy',
-      relatedQueryKeys: [
-        'IntuneTemplates',
-        'Configuration Policies',
-        'Compliance Policies',
-        'Protection Policies',
-      ],
       data: {
         ...formData,
         AssignmentFilterName: assignmentFilterName,
@@ -141,24 +153,27 @@ export const CippPolicyDeployDrawer = ({
         onClose={handleCloseDrawer}
         size="lg"
         footer={
-          <Stack direction="row" spacing={2} sx={{
-            justifyContent: "flex-start"
-          }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSubmit}
-              disabled={deployPolicy.isLoading || !isValid}
-            >
-              {deployPolicy.isLoading
-                ? 'Deploying...'
-                : deployPolicy.isSuccess
-                  ? 'Redeploy Policy'
-                  : 'Deploy Policy'}
-            </Button>
-            <Button variant="outlined" onClick={handleCloseDrawer}>
-              Close
-            </Button>
+          <Stack spacing={2}>
+            <CippApiResults apiObject={deployPolicy} />
+            <Stack direction="row" spacing={2} sx={{
+              justifyContent: "flex-start"
+            }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+                disabled={deployPolicy.isPending || !isValid}
+              >
+                {deployPolicy.isPending
+                  ? 'Deploying...'
+                  : deployPolicy.isSuccess
+                    ? 'Redeploy Policy'
+                    : 'Deploy Policy'}
+              </Button>
+              <Button variant="outlined" onClick={handleCloseDrawer}>
+                Close
+              </Button>
+            </Stack>
           </Stack>
         }
       >
@@ -230,13 +245,20 @@ export const CippPolicyDeployDrawer = ({
             compareValue="customGroup"
           >
             <Grid size={{ xs: 12 }}>
-              <CippFormComponent
-                type="textField"
-                label="Custom Group Names separated by comma. Wildcards (*) are allowed"
-                name="customGroup"
-                formControl={formControl}
-                validators={{ required: 'Please specify custom group names' }}
-              />
+              {singleTenant ? (
+                <CippFormComponent
+                  {...getGroupPickerField(groupTenant, 'groupTargets', 'Group(s)', true)}
+                  formControl={formControl}
+                />
+              ) : (
+                <CippFormComponent
+                  type="textField"
+                  label="Custom Group Names separated by comma. Wildcards (*) are allowed"
+                  name="customGroup"
+                  formControl={formControl}
+                  validators={{ required: 'Please specify custom group names' }}
+                />
+              )}
             </Grid>
           </CippFormCondition>
           <CippFormCondition
@@ -246,12 +268,24 @@ export const CippPolicyDeployDrawer = ({
             compareValue="On"
           >
             <Grid size={{ xs: 12 }}>
-              <CippFormComponent
-                type="textField"
-                label="Exclude Group Names separated by comma. Wildcards (*) are allowed"
-                name="excludeGroup"
-                formControl={formControl}
-              />
+              {singleTenant ? (
+                <CippFormComponent
+                  {...getGroupPickerField(
+                    groupTenant,
+                    'excludeGroupTargets',
+                    'Exclude group(s) (Optional)',
+                    false,
+                  )}
+                  formControl={formControl}
+                />
+              ) : (
+                <CippFormComponent
+                  type="textField"
+                  label="Exclude Group Names separated by comma. Wildcards (*) are allowed"
+                  name="excludeGroup"
+                  formControl={formControl}
+                />
+              )}
             </Grid>
           </CippFormCondition>
           <CippFormCondition
@@ -328,7 +362,6 @@ export const CippPolicyDeployDrawer = ({
               ))
             })()}
           </CippFormCondition>
-          <CippApiResults apiObject={deployPolicy} />
         </Stack>
       </CippOffCanvas>
     </>

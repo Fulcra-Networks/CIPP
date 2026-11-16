@@ -7,6 +7,7 @@ import { useCippIntunePolicyActions } from '../../../../components/CippComponent
 import { useCippReportDB } from '../../../../components/CippComponents/CippReportDBControls'
 import { CippIntunePolicyDetails } from '../../../../components/CippComponents/CippIntunePolicyDetails.jsx'
 import { Stack } from '@mui/system'
+import { CippIntuneDeploymentStatus } from '../../../../components/CippComponents/CippIntuneDeploymentStatus.jsx'
 
 const Page = () => {
   const pageTitle = 'Configuration Policies'
@@ -20,6 +21,7 @@ const Page = () => {
     syncTitle: 'Sync Intune Policy Report',
     allowToggle: true,
     defaultCached: false,
+    serverPagination: true,
   })
 
   const actions = useCippIntunePolicyActions(tenant, 'URLName', {
@@ -39,7 +41,12 @@ const Page = () => {
       'PolicyTypeName',
     ],
     actions: actions,
-    children: (row) => <CippIntunePolicyDetails row={row} tenant={tenant} />,
+    children: (row) => (
+      <>
+        <CippIntuneDeploymentStatus row={row} tenant={tenant} />
+        <CippIntunePolicyDetails row={row} tenant={tenant} />
+      </>
+    ),
     size: 'lg',
   }
 
@@ -58,6 +65,8 @@ const Page = () => {
       <CippTablePage
         title={pageTitle}
         apiUrl={reportDB.resolvedApiUrl}
+        apiData={reportDB.resolvedApiData}
+        apiDataKey={reportDB.apiDataKey}
         actions={actions}
         offCanvas={offCanvas}
         simpleColumns={simpleColumns}
@@ -80,5 +89,5 @@ const Page = () => {
   );
 }
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>
+Page.getLayout = (page) => <DashboardLayout tenantGroupSupport={true}>{page}</DashboardLayout>
 export default Page

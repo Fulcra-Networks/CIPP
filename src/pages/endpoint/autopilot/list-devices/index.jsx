@@ -72,7 +72,20 @@ const Page = () => {
       confirmText: "Enter a Group Tag and press continue."
     },
     {
-      label: "Rename Device",
+      label: 'Unassign User',
+      icon: <CippIcons.PersonRemove />,
+      type: 'POST',
+      url: '/api/ExecUnassignAPDevice',
+      data: {
+        device: 'id',
+        serialNumber: 'serialNumber',
+      },
+      hideCondition: (row) => !row.userPrincipalName,
+      confirmText: 'Are you sure you want to unassign [userPrincipalName] from [serialNumber]?',
+      color: 'warning',
+    },
+    {
+      label: 'Rename Device',
       icon: <CippIcons.Edit />,
       type: 'POST',
       url: '/api/ExecRenameAPDevice',
@@ -160,6 +173,7 @@ const Page = () => {
     'Tenant',
     'displayName',
     'serialNumber',
+    'userPrincipalName',
     'model',
     'manufacturer',
     'groupTag',
@@ -205,5 +219,5 @@ const Page = () => {
   )
 }
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>
+Page.getLayout = (page) => <DashboardLayout tenantGroupSupport={true}>{page}</DashboardLayout>
 export default Page

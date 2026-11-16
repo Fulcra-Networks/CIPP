@@ -4,18 +4,24 @@ import { ApiGetCall, ApiPostCall } from "../../api/ApiCall";
 import { CippApiResults } from "../CippComponents/CippApiResults";
 import { useState, useEffect } from "react";
 
-const CippLogRetentionSettings = () => {
+const CippLogRetentionSettings = ({
+  title = "Log Retention",
+  endpoint = "ExecLogRetentionConfig",
+  defaultDays = 90,
+  maxDays = 365,
+  description = "Configure how long to keep CIPP log entries. Logs will be automatically deleted after this period.",
+}) => {
   const retentionSetting = ApiGetCall({
-    url: "/api/ExecLogRetentionConfig?List=true",
-    queryKey: "LogRetentionSettings",
+    url: `/api/${endpoint}?List=true`,
+    queryKey: `${endpoint}Settings`,
   });
 
   const retentionChange = ApiPostCall({
     datafromUrl: true,
-    relatedQueryKeys: "LogRetentionSettings",
+    relatedQueryKeys: `${endpoint}Settings`,
   });
 
-  const [retentionDays, setRetentionDays] = useState(90);
+  const [retentionDays, setRetentionDays] = useState(defaultDays);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -32,16 +38,16 @@ const CippLogRetentionSettings = () => {
       return;
     }
 
-    if (days > 365) {
-      setError("Retention must be at most 365 days");
+    if (days > maxDays) {
+      setError(`Retention must be at most ${maxDays} days`);
       return;
     }
 
     setError("");
     retentionChange.mutate({
-      url: "/api/ExecLogRetentionConfig",
+      url: `/api/${endpoint}`,
       data: { RetentionDays: days },
-      queryKey: "LogRetentionPost",
+      queryKey: `${endpoint}Post`,
     });
   };
 
@@ -52,8 +58,8 @@ const CippLogRetentionSettings = () => {
     const days = parseInt(value);
     if (!isNaN(days) && days < 7) {
       setError("Retention must be at least 7 days");
-    } else if (!isNaN(days) && days > 365) {
-      setError("Retention must be at most 365 days");
+    } else if (!isNaN(days) && days > maxDays) {
+      setError(`Retention must be at most ${maxDays} days`);
     } else if (isNaN(days) && value !== "") {
       setError("Please enter a valid number");
     } else {
@@ -63,7 +69,7 @@ const CippLogRetentionSettings = () => {
 
   return (
     <CippButtonCard
-      title="Log Retention"
+      title={title}
       cardSx={{ display: "flex", flexDirection: "column", height: "100%" }}
       CardButton={
         <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
@@ -78,7 +84,7 @@ const CippLogRetentionSettings = () => {
             sx={{ width: "120px" }}
             label="Days"
             slotProps={{
-              htmlInput: { min: 7, max: 365 }
+              htmlInput: { min: 7, max: maxDays }
             }}
           />
           <Button
@@ -95,8 +101,7 @@ const CippLogRetentionSettings = () => {
       }
     >
       <Typography variant="body2">
-        Configure how long to keep CIPP log entries. Logs will be automatically deleted after this
-        period. Minimum retention is 7 days, maximum is 365 days, default is 90 days.
+        {description} Minimum retention is 7 days, maximum is {maxDays} days, default is {defaultDays} days.
       </Typography>
       <CippApiResults apiObject={retentionChange} />
     </CippButtonCard>

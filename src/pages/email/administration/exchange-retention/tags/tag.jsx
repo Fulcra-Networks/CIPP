@@ -111,7 +111,7 @@ const RetentionTag = () => {
     <CippFormPage
       formControl={formControl}
       queryKey={isEdit ? `RetentionTag-${name}` : "AddRetentionTag"}
-      title={isEdit ? `Edit Retention Tag: ${name}` : "Add Retention Tag"}
+      title={isEdit ? `Retention Tag: ${name}` : "Retention Tag"}
       backButtonTitle="Retention Tags"
       formPageType={isEdit ? "Edit" : "Add"}
       postUrl="/api/ExecManageRetentionTags"
@@ -271,6 +271,6 @@ const RetentionTag = () => {
   );
 };
 
-RetentionTag.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+RetentionTag.getLayout = (page) => <DashboardLayout usesTenant={false}>{page}</DashboardLayout>;
 
 export default RetentionTag;

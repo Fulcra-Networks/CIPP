@@ -5,9 +5,12 @@ import { CippApiDialog } from '../../../../components/CippComponents/CippApiDial
 import { CippApplicationDeployDrawer } from '../../../../components/CippComponents/CippApplicationDeployDrawer'
 import { Button } from '@mui/material'
 import { Stack } from '@mui/system'
+import { CippIntuneDeploymentStatus } from '../../../../components/CippComponents/CippIntuneDeploymentStatus.jsx'
 import { useSettings } from '../../../../hooks/use-settings.js'
 import { useDialog } from '../../../../hooks/use-dialog.js'
 import { useCippReportDB } from '../../../../components/CippComponents/CippReportDBControls'
+import { isMultiTenant, tenantScope } from '../../../../utils/tenant-selection'
+import { useTenantLabel } from '../../../../hooks/use-tenant-label'
 
 const assignmentIntentOptions = [
   { label: 'Required', value: 'Required' },
@@ -53,6 +56,7 @@ const Page = () => {
   const pageTitle = 'Applications'
   const vppSyncDialog = useDialog()
   const tenant = useSettings().currentTenant
+  const tenantLabel = useTenantLabel(tenant)
 
   const reportDB = useCippReportDB({
     apiUrl: '/api/ListApps',
@@ -61,6 +65,7 @@ const Page = () => {
     syncTitle: 'Sync Intune Applications Report',
     allowToggle: true,
     defaultCached: false,
+    serverPagination: true,
   })
 
   const getAssignmentFilterFields = () => [
@@ -92,9 +97,9 @@ const Page = () => {
   const makeAssignFormatter = (getRowData) => (row, action, formData) => {
     const formatRow = (singleRow) => {
       const tenantFilterValue =
-        tenant === 'AllTenants' && singleRow?.Tenant ? singleRow.Tenant : tenant
+        isMultiTenant(tenant) && singleRow?.Tenant ? singleRow.Tenant : tenant
       return {
-        tenantFilter: tenantFilterValue,
+        ...tenantScope(tenantFilterValue),
         ID: singleRow?.id,
         AppType: getAppAssignmentSettingsType(singleRow?.['@odata.type']),
         AssignmentFilterName: formData?.assignmentFilter?.value || null,
@@ -251,7 +256,7 @@ const Page = () => {
           // Re-validate the picker so the empty-allowed rule updates when direction changes.
           validators: { deps: ['groupTargets'] },
           helperText:
-            'Include assigns to these groups; Exclude excludes them. Replace updates only this direction and keeps the other (and All Users/All Devices) intact.',
+            'Include assigns to these groups. Exclude excludes these groups.',
         },
         { type: 'heading', label: 'Assignment options' },
         {
@@ -273,7 +278,7 @@ const Page = () => {
           // Re-validate the picker so the empty-allowed rule updates when mode changes.
           validators: { deps: ['groupTargets'] },
           helperText:
-            'Replace updates only the selected direction and keeps the other direction plus All Users/All Devices. Append adds the selected groups to existing assignments.',
+            'Replace + Include: these groups become the only assignments, and All Users/All Devices are removed. Exclusions stay. Replace + Exclude: these groups become the only exclusions. Assignments stay. Append: adds these groups and removes nothing.',
         },
         { type: 'heading', label: 'Device filter (optional)' },
         ...getAssignmentFilterFields(),
@@ -360,6 +365,15 @@ const Page = () => {
       'rules.0.path',
     ],
     actions: actions,
+    children: (row) => (
+      <CippIntuneDeploymentStatus
+        row={row}
+        tenant={tenant}
+        type="mobileApps"
+        url="/api/ListAppDeploymentStatus"
+      />
+    ),
+    size: 'lg',
   }
 
   const simpleColumns = [
@@ -377,6 +391,8 @@ const Page = () => {
       <CippTablePage
         title={pageTitle}
         apiUrl={reportDB.resolvedApiUrl}
+        apiData={reportDB.resolvedApiData}
+        apiDataKey={reportDB.apiDataKey}
         actions={actions}
         offCanvas={offCanvas}
         simpleColumns={simpleColumns}
@@ -400,7 +416,7 @@ const Page = () => {
           type: 'POST',
           url: '/api/ExecSyncVPP',
           data: {},
-          confirmText: `Are you sure you want to sync Apple Volume Purchase Program (VPP) tokens? This will sync all VPP tokens for ${tenant}.`,
+          confirmText: `Are you sure you want to sync Apple Volume Purchase Program (VPP) tokens? This will sync all VPP tokens for ${tenantLabel}.`,
         }}
       />
       {reportDB.syncDialog}
@@ -408,5 +424,5 @@ const Page = () => {
   );
 }
 
-Page.getLayout = (page) => <DashboardLayout allTenantsSupport={true}>{page}</DashboardLayout>
+Page.getLayout = (page) => <DashboardLayout tenantGroupSupport={true} allTenantsSupport={true}>{page}</DashboardLayout>
 export default Page
