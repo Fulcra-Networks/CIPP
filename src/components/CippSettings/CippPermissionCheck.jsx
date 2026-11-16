@@ -9,18 +9,18 @@ import {
   SvgIcon,
   Typography,
 } from "@mui/material";
+import { CippIcons } from "../../utils/icon-registry";
 import CippButtonCard from "../CippCards/CippButtonCard";
 import { ApiGetCall } from "../../api/ApiCall";
 import { useEffect, useState } from "react";
 import { CippPermissionResults } from "./CippPermissionResults";
 import { CippGDAPResults } from "./CippGDAPResults";
-import { Close, Sync } from "@mui/icons-material";
 import { CippTenantResults } from "./CippTenantResults";
 import { CippTimeAgo } from "../CippComponents/CippTimeAgo";
-import { Description } from "@mui/icons-material";
 
 const CippPermissionCheck = (props) => {
-  const { type, importReport = false, variant } = props;
+  const { type, importReport = false, variant, partnerTenantId } = props;
+  const isPrimaryPartner = !partnerTenantId;
   const [skipCache, setSkipCache] = useState(false);
   const [cardIcon, setCardIcon] = useState(null);
   const [offcanvasVisible, setOffcanvasVisible] = useState(false);
@@ -33,9 +33,13 @@ const CippPermissionCheck = (props) => {
 
   const executeCheck = ApiGetCall({
     url: "/api/ExecAccessChecks",
-    data: { Type: type, SkipCache: skipCache },
+    data: {
+      Type: type,
+      SkipCache: skipCache,
+      ...(partnerTenantId ? { partnerTenantId } : {}),
+    },
     waiting: importReport ? false : true,
-    queryKey: `ExecAccessChecks-${type}`,
+    queryKey: `ExecAccessChecks-${type}${partnerTenantId ? `-${partnerTenantId}` : ""}`,
   });
 
   const handlePermissionCheck = () => {
@@ -57,18 +61,19 @@ const CippPermissionCheck = (props) => {
         <Stack
           direction="row"
           spacing={3}
-          display="flex"
-          alignItems="center"
-          justifyContent={"space-between"}
-          width={"100%"}
-        >
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%"
+          }}>
           <Stack direction="row" spacing={1}>
             <Button
               variant="contained"
               size="small"
               startIcon={
                 <SvgIcon fontSize="small">
-                  <Sync />
+                  <CippIcons.Sync />
                 </SvgIcon>
               }
               onClick={handlePermissionCheck}
@@ -87,7 +92,7 @@ const CippPermissionCheck = (props) => {
                 disabled={executeCheck.isPending || executeCheck.isFetching}
               >
                 <SvgIcon fontSize="small" style={{ marginRight: 4 }}>
-                  <Description />
+                  <CippIcons.Description />
                 </SvgIcon>
                 Details
               </Button>
@@ -112,6 +117,17 @@ const CippPermissionCheck = (props) => {
     );
   };
 
+  const responseData = executeCheck?.error?.response?.data;
+  const responseText =
+    typeof responseData === "string" ? responseData : responseData ? JSON.stringify(responseData) : "";
+  const shouldShowApiResponse = responseText.includes(
+    "Access to this CIPP API endpoint is not allowed",
+  );
+  const checkErrorMessage =
+    shouldShowApiResponse
+      ? responseText
+      : `Failed to load ${type} check. Please try refreshing the page.`;
+
   return (
     <>
       <CippButtonCard
@@ -119,10 +135,11 @@ const CippPermissionCheck = (props) => {
         title={
           <Stack
             direction="row"
-            alignContent="center"
-            justifyContent={"space-between"}
-            sx={{ mb: 0 }}
-          >
+            sx={{
+              alignContent: "center",
+              justifyContent: "space-between",
+              mb: 0
+            }}>
             <Box>{type} Check</Box>
             <Stack direction="row" spacing={2}>
               {importReport?.[type] && <Chip size="small" label="Imported" variant="outlined" />}
@@ -141,7 +158,7 @@ const CippPermissionCheck = (props) => {
       >
         {executeCheck.isError && !importReport && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            Failed to load {type} check. Please try refreshing the page.
+            {checkErrorMessage}
           </Alert>
         )}
         {(executeCheck.isSuccess || executeCheck.isLoading) && (
@@ -158,7 +175,7 @@ const CippPermissionCheck = (props) => {
                       size="small"
                       onClick={() => setShowAlertMessage(false)}
                     >
-                      <Close fontSize="inherit" />
+                      <CippIcons.Close fontSize="inherit" />
                     </IconButton>
                   }
                 >
@@ -170,6 +187,7 @@ const CippPermissionCheck = (props) => {
               <CippPermissionResults
                 executeCheck={executeCheck}
                 importReport={importReport?.[type]}
+                isPrimaryPartner={isPrimaryPartner}
                 setSkipCache={setSkipCache}
                 offcanvasVisible={offcanvasVisible}
                 setOffcanvasVisible={setOffcanvasVisible}
@@ -180,6 +198,7 @@ const CippPermissionCheck = (props) => {
               <CippGDAPResults
                 executeCheck={executeCheck}
                 importReport={importReport?.[type]}
+                isPrimaryPartner={isPrimaryPartner}
                 offcanvasVisible={offcanvasVisible}
                 setOffcanvasVisible={setOffcanvasVisible}
                 setCardIcon={setCardIcon}

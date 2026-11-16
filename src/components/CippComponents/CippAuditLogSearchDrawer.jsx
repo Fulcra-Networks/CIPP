@@ -1,59 +1,222 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { CippIcons } from "../../utils/icon-registry"
 import { Button, Stack, Box } from "@mui/material";
-import { Add } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
 import { CippOffCanvas } from "./CippOffCanvas";
-import { ApiPostCall, ApiGetCallWithPagination } from "../../api/ApiCall";
+import { ApiPostCall, ApiGetCall } from "../../api/ApiCall";
 import CippFormComponent from "./CippFormComponent";
 import { CippApiResults } from "./CippApiResults";
 import { useSettings } from "../../hooks/use-settings";
 
+const recordTypeOptions = [
+  { label: "Azure Active Directory", value: "azureActiveDirectory" },
+  { label: "Azure AD Account Logon", value: "azureActiveDirectoryAccountLogon" },
+  { label: "Azure AD STS Logon", value: "azureActiveDirectoryStsLogon" },
+  { label: "Compliance DLP Endpoint", value: "complianceDLPEndpoint" },
+  { label: "Compliance DLP Exchange", value: "complianceDLPExchange" },
+  { label: "Compliance DLP SharePoint", value: "complianceDLPSharePoint" },
+  { label: "Data Governance", value: "dataGovernance" },
+  { label: "Exchange Admin", value: "exchangeAdmin" },
+  { label: "Exchange Item", value: "exchangeItem" },
+  { label: "Exchange Item Group", value: "exchangeItemGroup" },
+  { label: "Information Worker Protection", value: "informationWorkerProtection" },
+  { label: "Label Content Explorer", value: "labelContentExplorer" },
+  { label: "Microsoft Flow", value: "microsoftFlow" },
+  { label: "Microsoft Forms", value: "microsoftForms" },
+  { label: "Microsoft Stream", value: "microsoftStream" },
+  { label: "Microsoft Teams", value: "microsoftTeams" },
+  { label: "Microsoft Teams Admin", value: "microsoftTeamsAdmin" },
+  { label: "Microsoft Teams Analytics", value: "microsoftTeamsAnalytics" },
+  { label: "Microsoft Teams Device", value: "microsoftTeamsDevice" },
+  { label: "Microsoft Teams Shifts", value: "microsoftTeamsShifts" },
+  { label: "MIP Label", value: "mipLabel" },
+  { label: "OneDrive", value: "oneDrive" },
+  { label: "Power Apps App", value: "powerAppsApp" },
+  { label: "Power Apps Plan", value: "powerAppsPlan" },
+  { label: "Power BI Audit", value: "powerBIAudit" },
+  { label: "Power BI DLP", value: "powerBIDlp" },
+  { label: "Security & Compliance Alerts", value: "securityComplianceAlerts" },
+  { label: "Security & Compliance Insights", value: "securityComplianceInsights" },
+  { label: "Security & Compliance RBAC", value: "securityComplianceRBAC" },
+  { label: "SharePoint", value: "sharePoint" },
+  { label: "SharePoint File Operation", value: "sharePointFileOperation" },
+  { label: "SharePoint List Operation", value: "sharePointListOperation" },
+  { label: "SharePoint Sharing Operation", value: "sharePointSharingOperation" },
+  { label: "Threat Intelligence", value: "threatIntelligence" },
+  { label: "Threat Intelligence ATP Content", value: "threatIntelligenceAtpContent" },
+  { label: "Threat Intelligence URL", value: "threatIntelligenceUrl" },
+  { label: "Workplace Analytics", value: "workplaceAnalytics" },
+];
+
+const operationOptions = [
+  // Authentication & User Operations
+  { label: "User Logged In", value: "UserLoggedIn" },
+  { label: "Mailbox Login", value: "mailboxlogin" },
+
+  // User Management Operations
+  { label: "Add User", value: "add user." },
+  { label: "Update User", value: "update user." },
+  { label: "Delete User", value: "delete user." },
+  { label: "Reset User Password", value: "reset user password." },
+  { label: "Change User Password", value: "change user password." },
+  { label: "Change User License", value: "change user license." },
+
+  // Group Management Operations
+  { label: "Add Group", value: "add group." },
+  { label: "Update Group", value: "update group." },
+  { label: "Delete Group", value: "delete group." },
+  { label: "Add Member to Group", value: "add member to group." },
+  { label: "Remove Member from Group", value: "remove member from group." },
+
+  // Mailbox Operations
+  { label: "New Mailbox", value: "New-Mailbox" },
+  { label: "Set Mailbox", value: "Set-Mailbox" },
+  { label: "Add Mailbox Permission", value: "add-mailboxpermission" },
+  { label: "Remove Mailbox Permission", value: "remove-mailboxpermission" },
+  { label: "Mail Items Accessed", value: "mailitemsaccessed" },
+
+  // Email Operations
+  { label: "Send Message", value: "send" },
+  { label: "Send As", value: "sendas" },
+  { label: "Send On Behalf", value: "sendonbehalf" },
+  { label: "Create Item", value: "create" },
+  { label: "Update Message", value: "update" },
+  { label: "Copy Messages", value: "copy" },
+  { label: "Move Messages", value: "move" },
+  { label: "Move to Deleted Items", value: "movetodeleteditems" },
+  { label: "Soft Delete", value: "softdelete" },
+  { label: "Hard Delete", value: "harddelete" },
+
+  // Inbox Rules
+  { label: "New Inbox Rule", value: "new-inboxrule" },
+  { label: "Set Inbox Rule", value: "set-inboxrule" },
+  { label: "Update Inbox Rules", value: "updateinboxrules" },
+
+  // Folder Operations
+  { label: "Add Folder Permissions", value: "addfolderpermissions" },
+  { label: "Remove Folder Permissions", value: "removefolderpermissions" },
+  { label: "Update Folder Permissions", value: "updatefolderpermissions" },
+  { label: "Update Calendar Delegation", value: "updatecalendardelegation" },
+
+  // SharePoint/OneDrive Operations (Common ones)
+  { label: "File Accessed", value: "FileAccessed" },
+  { label: "File Modified", value: "FileModified" },
+  { label: "File Deleted", value: "FileDeleted" },
+  { label: "File Downloaded", value: "FileDownloaded" },
+  { label: "File Uploaded", value: "FileUploaded" },
+  { label: "Sharing Set", value: "SharingSet" },
+  { label: "Anonymous Link Created", value: "AnonymousLinkCreated" },
+
+  // Role and Permission Operations
+  { label: "Add Member to Role", value: "add member to role." },
+  { label: "Remove Member from Role", value: "remove member from role." },
+  { label: "Add Service Principal", value: "add service principal." },
+  { label: "Remove Service Principal", value: "remove service principal." },
+
+  // Company and Domain Operations
+  { label: "Add Domain to Company", value: "add domain to company." },
+  { label: "Remove Domain from Company", value: "remove domain from company." },
+  { label: "Verify Domain", value: "verify domain." },
+  { label: "Set Company Information", value: "set company information." },
+
+  // Security Operations
+  { label: "Disable Strong Authentication", value: "Disable Strong Authentication." },
+  { label: "Apply Record Label", value: "applyrecordlabel" },
+  { label: "Update STS Refresh Token", value: "Update StsRefreshTokenValidFrom Timestamp." },
+];
+
+const toUnixSeconds = (value) => {
+  if (!value) return null;
+  const ms = new Date(value).getTime();
+  return Number.isNaN(ms) ? null : Math.floor(ms / 1000);
+};
+
+const toOptionList = (values, optionList = []) =>
+  (Array.isArray(values) ? values : []).filter(Boolean).map((value) => {
+    const known = optionList.find((option) => option.value === value);
+    return known ?? { label: value, value };
+  });
+
+// Keep array defaults for all multi-select fields to avoid Autocomplete receiving undefined.
+const baseDefaultValues = {
+  RecordTypeFilters: [],
+  KeywordFilters: [],
+  OperationsFilters: [],
+  UserPrincipalNameFilters: [],
+  IPAddressFilters: [],
+  ObjectIdFilters: [],
+  AdministrativeUnitFilters: [],
+  ProcessLogs: false,
+};
+
+// Maps a Graph security/auditLog/queries object (what the manual-searches table lists) back onto
+// the form, so an existing search can be reopened with every filter it was created with.
+const mapSearchToFormValues = (search) => ({
+  DisplayName: search.displayName ? `${search.displayName} - Copy` : "",
+  StartTime: toUnixSeconds(search.filterStartDateTime),
+  EndTime: toUnixSeconds(search.filterEndDateTime),
+  RecordTypeFilters: toOptionList(search.recordTypeFilters, recordTypeOptions),
+  KeywordFilters: toOptionList(
+    typeof search.keywordFilter === "string" ? search.keywordFilter.split(/\s+/) : []
+  ),
+  OperationsFilters: toOptionList(search.operationFilters, operationOptions),
+  UserPrincipalNameFilters: toOptionList(search.userPrincipalNameFilters),
+  IPAddressFilters: toOptionList(search.ipAddressFilters),
+  ObjectIdFilters: toOptionList(search.objectIdFilters),
+  AdministrativeUnitFilters: toOptionList(search.administrativeUnitIdFilters),
+  ProcessLogs: false,
+});
+
 export const CippAuditLogSearchDrawer = ({
   buttonText = "New Search",
   relatedQueryKeys = ["AuditLogSearches"],
+  copySource = null,
+  onClose,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const currentTenantDomain = useSettings().currentTenant;
+  const isCopy = !!copySource;
 
-  // Fetch tenant list to get full tenant details
-  const tenantList = ApiGetCallWithPagination({
+  // Fetch tenant list to get full tenant details.
+  const tenantList = ApiGetCall({
     url: "/api/ListTenants",
     queryKey: "ListTenants-FormnotAllTenants",
     data: { AllTenantSelector: false },
   });
 
-  // Find the current tenant from the list using the domain name - handle pagination data structure
-  const allTenants = tenantList.data?.pages?.flatMap((page) => page.Results || page) || [];
+  // Find the current tenant from the list using the domain name
+  const allTenants = Array.isArray(tenantList.data) ? tenantList.data : [];
   const currentTenant = allTenants.find(
     (tenant) => tenant.defaultDomainName === currentTenantDomain
   );
 
-  // Create default values with current tenant prefilled
-  const defaultValues = {
-    TenantFilter: currentTenant
-      ? {
-          label: `${currentTenant.displayName} (${currentTenant.defaultDomainName})`,
-          value: currentTenant.defaultDomainName,
-        }
-      : null,
-  };
+  // Values for a fresh form, or for a copy of an existing search. The tenant is always the one
+  // currently selected: the Graph query object does not carry it, and the table is tenant-scoped.
+  const buildFormValues = useCallback(
+    (source) => ({
+      ...baseDefaultValues,
+      ...(source ? mapSearchToFormValues(source) : {}),
+      TenantFilter: currentTenant
+        ? {
+            label: `${currentTenant.displayName} (${currentTenant.defaultDomainName})`,
+            value: currentTenant.defaultDomainName,
+          }
+        : null,
+    }),
+    [currentTenant]
+  );
 
   const formControl = useForm({
-    defaultValues,
+    defaultValues: buildFormValues(copySource),
   });
 
-  // Update form defaults when tenant data is loaded
+  // Re-seed the form when the tenant list resolves or when a search is handed in to copy.
   useEffect(() => {
-    if (currentTenant) {
-      const newDefaultValues = {
-        TenantFilter: {
-          label: `${currentTenant.displayName} (${currentTenant.defaultDomainName})`,
-          value: currentTenant.defaultDomainName,
-        },
-      };
-      formControl.reset(newDefaultValues);
+    formControl.reset(buildFormValues(copySource));
+    if (copySource) {
+      setDrawerVisible(true);
     }
-  }, [currentTenant, formControl]);
+  }, [buildFormValues, copySource, formControl]);
 
   const createSearchApi = ApiPostCall({
     datafromUrl: false,
@@ -62,17 +225,9 @@ export const CippAuditLogSearchDrawer = ({
 
   const handleCloseDrawer = () => {
     setDrawerVisible(false);
-    if (currentTenant) {
-      const resetValues = {
-        TenantFilter: {
-          label: `${currentTenant.displayName} (${currentTenant.defaultDomainName})`,
-          value: currentTenant.defaultDomainName,
-        },
-      };
-      formControl.reset(resetValues);
-    } else {
-      formControl.reset();
-    }
+    formControl.reset(buildFormValues(null));
+    createSearchApi.reset();
+    onClose?.();
   };
 
   const handleCreateSearch = async (data) => {
@@ -83,24 +238,17 @@ export const CippAuditLogSearchDrawer = ({
       formattedData.TenantFilter = formattedData.TenantFilter.value;
     }
 
-    // Handle KeywordFilter - extract values from array and join with spaces
-    if (Array.isArray(formattedData.KeywordFilter)) {
-      const keywords = formattedData.KeywordFilter.map((item) =>
+    // Handle KeywordFilters - extract values from array and join with spaces
+    if (Array.isArray(formattedData.KeywordFilters)) {
+      const keywords = formattedData.KeywordFilters.map((item) =>
         typeof item === "object" ? item.value : item
       ).filter(Boolean);
-      formattedData.KeywordFilter = keywords.join(" ");
+      formattedData.KeywordFilters = keywords.join(" ");
     }
 
     // Extract values from RecordTypeFilters array
     if (Array.isArray(formattedData.RecordTypeFilters)) {
       formattedData.RecordTypeFilters = formattedData.RecordTypeFilters.map((item) =>
-        typeof item === "object" ? item.value : item
-      );
-    }
-
-    // Extract values from ServiceFilters array
-    if (Array.isArray(formattedData.ServiceFilters)) {
-      formattedData.ServiceFilters = formattedData.ServiceFilters.map((item) =>
         typeof item === "object" ? item.value : item
       );
     }
@@ -184,7 +332,7 @@ export const CippAuditLogSearchDrawer = ({
         url: "/api/ListTenants?AllTenantSelector=false",
         labelField: (option) => `${option.displayName} (${option.defaultDomainName})`,
         valueField: "defaultDomainName",
-        queryKey: "ListTenants-FormnotAllTenants",
+        queryKey: "ListTenants-AuditDrawer",
         excludeTenantFilter: true,
       },
       validators: { validate: (value) => !!value?.value || "Please select a tenant" },
@@ -208,75 +356,15 @@ export const CippAuditLogSearchDrawer = ({
     },
     {
       type: "autoComplete",
-      name: "ServiceFilters",
-      label: "Services",
-      multiple: true,
-      creatable: false,
-      options: [
-        { label: "Azure Active Directory", value: "AzureActiveDirectory" },
-        { label: "Dynamics 365", value: "CRM" },
-        { label: "Exchange Online", value: "Exchange" },
-        { label: "Microsoft Flow", value: "MicrosoftFlow" },
-        { label: "Microsoft Teams", value: "MicrosoftTeams" },
-        { label: "OneDrive for Business", value: "OneDrive" },
-        { label: "Power BI", value: "PowerBI" },
-        { label: "Security & Compliance", value: "ThreatIntelligence" },
-        { label: "SharePoint Online", value: "SharePoint" },
-        { label: "Yammer", value: "Yammer" },
-      ],
-      validators: {
-        validate: (values) => values?.length > 0 || "Please select at least one service",
-      },
-    },
-    {
-      type: "autoComplete",
       name: "RecordTypeFilters",
       label: "Record Types",
       multiple: true,
       creatable: false,
-      options: [
-        { label: "Azure Active Directory", value: "azureActiveDirectory" },
-        { label: "Azure AD Account Logon", value: "azureActiveDirectoryAccountLogon" },
-        { label: "Azure AD STS Logon", value: "azureActiveDirectoryStsLogon" },
-        { label: "Compliance DLP Endpoint", value: "complianceDLPEndpoint" },
-        { label: "Compliance DLP Exchange", value: "complianceDLPExchange" },
-        { label: "Compliance DLP SharePoint", value: "complianceDLPSharePoint" },
-        { label: "Data Governance", value: "dataGovernance" },
-        { label: "Exchange Admin", value: "exchangeAdmin" },
-        { label: "Exchange Item", value: "exchangeItem" },
-        { label: "Exchange Item Group", value: "exchangeItemGroup" },
-        { label: "Information Worker Protection", value: "informationWorkerProtection" },
-        { label: "Label Content Explorer", value: "labelContentExplorer" },
-        { label: "Microsoft Flow", value: "microsoftFlow" },
-        { label: "Microsoft Forms", value: "microsoftForms" },
-        { label: "Microsoft Stream", value: "microsoftStream" },
-        { label: "Microsoft Teams", value: "microsoftTeams" },
-        { label: "Microsoft Teams Admin", value: "microsoftTeamsAdmin" },
-        { label: "Microsoft Teams Analytics", value: "microsoftTeamsAnalytics" },
-        { label: "Microsoft Teams Device", value: "microsoftTeamsDevice" },
-        { label: "Microsoft Teams Shifts", value: "microsoftTeamsShifts" },
-        { label: "MIP Label", value: "mipLabel" },
-        { label: "OneDrive", value: "oneDrive" },
-        { label: "Power Apps App", value: "powerAppsApp" },
-        { label: "Power Apps Plan", value: "powerAppsPlan" },
-        { label: "Power BI Audit", value: "powerBIAudit" },
-        { label: "Power BI DLP", value: "powerBIDlp" },
-        { label: "Security & Compliance Alerts", value: "securityComplianceAlerts" },
-        { label: "Security & Compliance Insights", value: "securityComplianceInsights" },
-        { label: "Security & Compliance RBAC", value: "securityComplianceRBAC" },
-        { label: "SharePoint", value: "sharePoint" },
-        { label: "SharePoint File Operation", value: "sharePointFileOperation" },
-        { label: "SharePoint List Operation", value: "sharePointListOperation" },
-        { label: "SharePoint Sharing Operation", value: "sharePointSharingOperation" },
-        { label: "Threat Intelligence", value: "threatIntelligence" },
-        { label: "Threat Intelligence ATP Content", value: "threatIntelligenceAtpContent" },
-        { label: "Threat Intelligence URL", value: "threatIntelligenceUrl" },
-        { label: "Workplace Analytics", value: "workplaceAnalytics" },
-      ],
+      options: recordTypeOptions,
     },
     {
       type: "autoComplete",
-      name: "KeywordFilter",
+      name: "KeywordFilters",
       label: "Keywords",
       multiple: true,
       creatable: true,
@@ -291,82 +379,7 @@ export const CippAuditLogSearchDrawer = ({
       multiple: true,
       creatable: true,
       placeholder: "Enter or select operations",
-      options: [
-        // Authentication & User Operations
-        { label: "User Logged In", value: "UserLoggedIn" },
-        { label: "Mailbox Login", value: "mailboxlogin" },
-
-        // User Management Operations
-        { label: "Add User", value: "add user." },
-        { label: "Update User", value: "update user." },
-        { label: "Delete User", value: "delete user." },
-        { label: "Reset User Password", value: "reset user password." },
-        { label: "Change User Password", value: "change user password." },
-        { label: "Change User License", value: "change user license." },
-
-        // Group Management Operations
-        { label: "Add Group", value: "add group." },
-        { label: "Update Group", value: "update group." },
-        { label: "Delete Group", value: "delete group." },
-        { label: "Add Member to Group", value: "add member to group." },
-        { label: "Remove Member from Group", value: "remove member from group." },
-
-        // Mailbox Operations
-        { label: "New Mailbox", value: "New-Mailbox" },
-        { label: "Set Mailbox", value: "Set-Mailbox" },
-        { label: "Add Mailbox Permission", value: "add-mailboxpermission" },
-        { label: "Remove Mailbox Permission", value: "remove-mailboxpermission" },
-        { label: "Mail Items Accessed", value: "mailitemsaccessed" },
-
-        // Email Operations
-        { label: "Send Message", value: "send" },
-        { label: "Send As", value: "sendas" },
-        { label: "Send On Behalf", value: "sendonbehalf" },
-        { label: "Create Item", value: "create" },
-        { label: "Update Message", value: "update" },
-        { label: "Copy Messages", value: "copy" },
-        { label: "Move Messages", value: "move" },
-        { label: "Move to Deleted Items", value: "movetodeleteditems" },
-        { label: "Soft Delete", value: "softdelete" },
-        { label: "Hard Delete", value: "harddelete" },
-
-        // Inbox Rules
-        { label: "New Inbox Rule", value: "new-inboxrule" },
-        { label: "Set Inbox Rule", value: "set-inboxrule" },
-        { label: "Update Inbox Rules", value: "updateinboxrules" },
-
-        // Folder Operations
-        { label: "Add Folder Permissions", value: "addfolderpermissions" },
-        { label: "Remove Folder Permissions", value: "removefolderpermissions" },
-        { label: "Update Folder Permissions", value: "updatefolderpermissions" },
-        { label: "Update Calendar Delegation", value: "updatecalendardelegation" },
-
-        // SharePoint/OneDrive Operations (Common ones)
-        { label: "File Accessed", value: "FileAccessed" },
-        { label: "File Modified", value: "FileModified" },
-        { label: "File Deleted", value: "FileDeleted" },
-        { label: "File Downloaded", value: "FileDownloaded" },
-        { label: "File Uploaded", value: "FileUploaded" },
-        { label: "Sharing Set", value: "SharingSet" },
-        { label: "Anonymous Link Created", value: "AnonymousLinkCreated" },
-
-        // Role and Permission Operations
-        { label: "Add Member to Role", value: "add member to role." },
-        { label: "Remove Member from Role", value: "remove member from role." },
-        { label: "Add Service Principal", value: "add service principal." },
-        { label: "Remove Service Principal", value: "remove service principal." },
-
-        // Company and Domain Operations
-        { label: "Add Domain to Company", value: "add domain to company." },
-        { label: "Remove Domain from Company", value: "remove domain from company." },
-        { label: "Verify Domain", value: "verify domain." },
-        { label: "Set Company Information", value: "set company information." },
-
-        // Security Operations
-        { label: "Disable Strong Authentication", value: "Disable Strong Authentication." },
-        { label: "Apply Record Label", value: "applyrecordlabel" },
-        { label: "Update STS Refresh Token", value: "Update StsRefreshTokenValidFrom Timestamp." },
-      ],
+      options: operationOptions,
     },
     {
       type: "autoComplete",
@@ -432,26 +445,29 @@ export const CippAuditLogSearchDrawer = ({
 
   return (
     <>
-      <Button onClick={() => setDrawerVisible(true)} startIcon={<Add />}>
+      <Button onClick={() => setDrawerVisible(true)} startIcon={<CippIcons.Add />}>
         {buttonText}
       </Button>
       <CippOffCanvas
-        title="Create New Audit Log Search"
+        title={isCopy ? "Copy Audit Log Search" : "Create New Audit Log Search"}
         visible={drawerVisible}
         onClose={handleCloseDrawer}
         size="lg"
         footer={
-          <Stack direction="row" spacing={2} sx={{ width: "100%" }}>
-            <Button
-              variant="contained"
-              onClick={formControl.handleSubmit(handleCreateSearch)}
-              disabled={createSearchApi.isLoading}
-            >
-              {createSearchApi.isLoading ? "Creating..." : "Create Search"}
-            </Button>
-            <Button variant="outlined" onClick={handleCloseDrawer}>
-              Cancel
-            </Button>
+          <Stack spacing={2}>
+            <CippApiResults apiObject={createSearchApi} />
+            <Stack direction="row" spacing={2} sx={{ width: "100%" }}>
+              <Button
+                variant="contained"
+                onClick={formControl.handleSubmit(handleCreateSearch)}
+                disabled={createSearchApi.isPending}
+              >
+                {createSearchApi.isPending ? "Creating..." : "Create Search"}
+              </Button>
+              <Button variant="outlined" onClick={handleCloseDrawer}>
+                Cancel
+              </Button>
+            </Stack>
           </Stack>
         }
       >
@@ -463,7 +479,6 @@ export const CippAuditLogSearchDrawer = ({
               </Box>
             ))}
           </Box>
-          <CippApiResults apiObject={createSearchApi} />
         </Box>
       </CippOffCanvas>
     </>

@@ -3,7 +3,7 @@ import { Alert, Box, Stack } from "@mui/material";
 import { Grid } from "@mui/system";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/router";
-import { Layout as DashboardLayout } from "../../../../layouts/index.js";
+import { Layout as DashboardLayout } from "../../../../layouts/index";
 import CippFormPage from "../../../../components/CippFormPages/CippFormPage";
 import CippFormSkeleton from "../../../../components/CippFormPages/CippFormSkeleton";
 import CippFormComponent from "../../../../components/CippComponents/CippFormComponent";
@@ -137,6 +137,6 @@ const EditReusableSetting = () => {
   );
 };
 
-EditReusableSetting.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+EditReusableSetting.getLayout = (page) => <DashboardLayout usesTenant={false}>{page}</DashboardLayout>;
 
 export default EditReusableSetting;

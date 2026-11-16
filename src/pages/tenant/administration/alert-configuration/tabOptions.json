@@ -1,0 +1,22 @@
+[
+  {
+    "label": "Alert Configuration",
+    "path": "/tenant/administration/alert-configuration",
+    "icon": "Notifications"
+  },
+  {
+    "label": "Alert History",
+    "path": "/tenant/administration/alert-configuration/history",
+    "icon": "History"
+  },
+  {
+    "label": "Run History",
+    "path": "/tenant/administration/alert-configuration/run-history",
+    "icon": "ManageHistory"
+  },
+  {
+    "label": "Snoozed Alerts",
+    "path": "/tenant/administration/alert-configuration/snoozed-alerts",
+    "icon": "ShieldMoon"
+  }
+]

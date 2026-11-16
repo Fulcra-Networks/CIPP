@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import CippFormPage from "../../../components/CippFormPages/CippFormPage";
-import { Layout as DashboardLayout } from "../../../layouts/index.js";
+import { Layout as DashboardLayout } from "../../../layouts/index";
 import CippSchedulerForm from "../../../components/CippFormPages/CippSchedulerForm";
 import { useRouter } from "next/router";
 
@@ -22,6 +22,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout usesTenant={false}>{page}</DashboardLayout>;
 
 export default Page;

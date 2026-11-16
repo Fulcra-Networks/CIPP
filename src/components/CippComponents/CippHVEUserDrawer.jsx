@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { Button, Alert, Box } from "@mui/material";
+import { CippIcons } from "../../utils/icon-registry"
+import { Button, Alert, Box, Stack } from "@mui/material";
 import { Grid } from "@mui/system";
 import { useForm } from "react-hook-form";
-import { PersonAdd } from "@mui/icons-material";
 import { CippOffCanvas } from "./CippOffCanvas";
 import CippFormComponent from "./CippFormComponent";
 import { CippApiResults } from "./CippApiResults";
 import { useSettings } from "../../hooks/use-settings";
 import { ApiPostCall } from "../../api/ApiCall";
+import { tenantScope } from "../../utils/tenant-selection";
 
 export const CippHVEUserDrawer = ({
   buttonText = "Add HVE User",
@@ -35,7 +36,7 @@ export const CippHVEUserDrawer = ({
   const handleSubmit = () => {
     const formData = formControl.getValues();
     const postData = {
-      tenantFilter: formData.tenantFilter,
+      ...tenantScope(formData.tenantFilter),
       displayName: formData.displayName,
       password: formData.password,
       primarySMTPAddress: formData.primarySMTPAddress,
@@ -60,9 +61,9 @@ export const CippHVEUserDrawer = ({
   return (
     <>
       <PermissionButton
-        requiredPermissions={requiredPermissions}
+        {...(PermissionButton !== Button ? { requiredPermissions } : {})}
         onClick={() => setDrawerVisible(true)}
-        startIcon={<PersonAdd />}
+        startIcon={<CippIcons.PersonAdd />}
       >
         {buttonText}
       </PermissionButton>
@@ -72,23 +73,26 @@ export const CippHVEUserDrawer = ({
         onClose={handleCloseDrawer}
         size="md"
         footer={
-          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-start" }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSubmit}
-              disabled={createHVEUser.isLoading}
-            >
-              {createHVEUser.isLoading
-                ? "Creating User..."
-                : createHVEUser.isSuccess
-                ? "Create Another User"
-                : "Create HVE User"}
-            </Button>
-            <Button variant="outlined" onClick={handleCloseDrawer}>
-              Close
-            </Button>
-          </div>
+          <Stack spacing={2}>
+            <CippApiResults apiObject={createHVEUser} />
+            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-start" }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+                disabled={createHVEUser.isPending}
+              >
+                {createHVEUser.isPending
+                  ? "Creating User..."
+                  : createHVEUser.isSuccess
+                  ? "Create Another User"
+                  : "Create HVE User"}
+              </Button>
+              <Button variant="outlined" onClick={handleCloseDrawer}>
+                Close
+              </Button>
+            </div>
+          </Stack>
         }
       >
         <Grid container spacing={2}>
@@ -98,7 +102,8 @@ export const CippHVEUserDrawer = ({
                 <strong>HVE SMTP Configuration Settings:</strong>
                 <Box component="ul" sx={{ mt: 1, mb: 0, pl: 2 }}>
                   <li>
-                    <strong>Server:</strong> smtp-hve.office365.com
+                    <strong>Server:</strong> smtp.hve.mx.microsoft (recommended) or
+                    smtp-hve.office365.com (deprecated)
                   </li>
                   <li>
                     <strong>Port:</strong> 587
@@ -109,9 +114,12 @@ export const CippHVEUserDrawer = ({
                   <li>
                     <strong>TLS Support:</strong> TLS 1.2 and TLS 1.3
                   </li>
+                  <li>
+                    <strong>Authentication:</strong> HVE account credentials or OAuth token
+                  </li>
                 </Box>
                 <Box sx={{ mt: 1, fontSize: "0.875rem", fontStyle: "italic" }}>
-                  Use these settings to configure your email client for HVE access.
+                  Use these settings to configure your application or device for HVE access.
                 </Box>
               </Box>
             </Alert>
@@ -162,8 +170,6 @@ export const CippHVEUserDrawer = ({
               }}
             />
           </Grid>
-
-          <CippApiResults apiObject={createHVEUser} />
         </Grid>
       </CippOffCanvas>
     </>

@@ -5,6 +5,9 @@ import { CippFormTenantSelector } from "./CippFormTenantSelector";
 import { CippFormCondition } from "./CippFormCondition";
 import CippTenantGroupRuleBuilder from "./CippTenantGroupRuleBuilder";
 
+// The API refuses these too: onboarding owns the last one, baselines and templates treat the others as placeholders
+const reservedGroupNames = ["alltenants", "exported template", "template tenant", "excluded onboarded tenants"];
+
 const CippAddEditTenantGroups = ({ formControl, initialValues, title, backButtonTitle, hideSubmitButton = false }) => {
   return (
     <>
@@ -24,7 +27,10 @@ const CippAddEditTenantGroups = ({ formControl, initialValues, title, backButton
               minLength: {
                 value: 2,
                 message: "Group name must be at least 2 characters long"
-              }
+              },
+              validate: (value) =>
+                !reservedGroupNames.includes(value?.trim().toLowerCase()) ||
+                `'${value.trim()}' is a reserved name. Choose a different group name.`,
             }}
           />
         </Grid>
@@ -83,6 +89,12 @@ const CippAddEditTenantGroups = ({ formControl, initialValues, title, backButton
             compareType="is"
             compareValue="dynamic"
           >
+            <CippFormComponent
+              type="switch"
+              name="excludePartnerTenant"
+              label="Exclude Partner Tenant from this group"
+              formControl={formControl}
+            />
             <CippTenantGroupRuleBuilder
               formControl={formControl}
               name="dynamicRules"

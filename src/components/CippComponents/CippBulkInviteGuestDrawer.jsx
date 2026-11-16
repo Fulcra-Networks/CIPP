@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { Button, Link, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import { CippIcons } from "../../utils/icon-registry"
+import { Button, Link, Dialog, DialogActions, DialogContent, DialogTitle, Stack } from "@mui/material";
 import { Grid } from "@mui/system";
 import { useForm, useWatch } from "react-hook-form";
-import { GroupAdd, Delete } from "@mui/icons-material";
 import { CippOffCanvas } from "./CippOffCanvas";
 import CippFormComponent from "./CippFormComponent";
 import { CippDataTable } from "../CippTable/CippDataTable";
 import { CippApiResults } from "./CippApiResults";
 import { useSettings } from "../../hooks/use-settings";
 import { ApiPostCall } from "../../api/ApiCall";
+import { getCippValidator } from "../../utils/get-cipp-validator";
+import { tenantScope } from "../../utils/tenant-selection";
 
 export const CippBulkInviteGuestDrawer = ({
   buttonText = "Bulk Invite Guests",
@@ -22,7 +24,7 @@ export const CippBulkInviteGuestDrawer = ({
   const fields = ["displayName", "mail", "redirectUri"];
 
   const formControl = useForm({
-    mode: "onChange",
+    mode: "onBlur",
     defaultValues: {
       tenantFilter: initialState.currentTenant,
       sendInvite: true,
@@ -101,7 +103,7 @@ export const CippBulkInviteGuestDrawer = ({
     const tenantFilter = formData.tenantFilter;
 
     const payload = (formData.bulkGuests || []).map((row) => ({
-      tenantFilter,
+      ...tenantScope(tenantFilter),
       displayName: row?.displayName ?? "",
       mail: row?.mail ?? "",
       redirectUri: row?.redirectUri ?? "",
@@ -117,8 +119,9 @@ export const CippBulkInviteGuestDrawer = ({
     });
   };
 
-  const handleCloseDrawer = () => {
-    setDrawerVisible(false);
+  // Reset on open as well as close: the page stays mounted across tenant switches, so the
+  // mount-time defaults would otherwise send the request to the previously selected tenant.
+  const resetForm = () => {
     formControl.reset({
       tenantFilter: initialState.currentTenant,
       sendInvite: true,
@@ -127,9 +130,19 @@ export const CippBulkInviteGuestDrawer = ({
     });
   };
 
+  const handleOpenDrawer = () => {
+    resetForm();
+    setDrawerVisible(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setDrawerVisible(false);
+    resetForm();
+  };
+
   const actions = [
     {
-      icon: <Delete />,
+      icon: <CippIcons.Delete />,
       label: "Delete Row",
       confirmText: "Are you sure you want to delete this row?",
       customFunction: handleRemoveItem,
@@ -140,9 +153,9 @@ export const CippBulkInviteGuestDrawer = ({
   return (
     <>
       <PermissionButton
-        requiredPermissions={requiredPermissions}
-        onClick={() => setDrawerVisible(true)}
-        startIcon={<GroupAdd />}
+        {...(PermissionButton !== Button ? { requiredPermissions } : {})}
+        onClick={handleOpenDrawer}
+        startIcon={<CippIcons.GroupAdd />}
       >
         {buttonText}
       </PermissionButton>
@@ -152,25 +165,28 @@ export const CippBulkInviteGuestDrawer = ({
         onClose={handleCloseDrawer}
         size="lg"
         footer={
-          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-start" }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSubmit}
-              disabled={
-                inviteGuestsBulk.isLoading || !bulkGuestsData || bulkGuestsData.length === 0
-              }
-            >
-              {inviteGuestsBulk.isLoading
-                ? "Sending Invites..."
-                : inviteGuestsBulk.isSuccess
-                  ? "Send More Invites"
-                  : "Send Invites"}
-            </Button>
-            <Button variant="outlined" onClick={handleCloseDrawer}>
-              Close
-            </Button>
-          </div>
+          <Stack spacing={2}>
+            <CippApiResults apiObject={inviteGuestsBulk} />
+            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-start" }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+                disabled={
+                  inviteGuestsBulk.isPending || !bulkGuestsData || bulkGuestsData.length === 0
+                }
+              >
+                {inviteGuestsBulk.isPending
+                  ? "Sending Invites..."
+                  : inviteGuestsBulk.isSuccess
+                    ? "Send More Invites"
+                    : "Send Invites"}
+              </Button>
+              <Button variant="outlined" onClick={handleCloseDrawer}>
+                Close
+              </Button>
+            </div>
+          </Stack>
         }
       >
         <Grid container spacing={2}>
@@ -228,8 +244,6 @@ export const CippBulkInviteGuestDrawer = ({
               noCard={true}
             />
           </Grid>
-
-          <CippApiResults apiObject={inviteGuestsBulk} />
         </Grid>
 
         <Dialog
@@ -255,6 +269,10 @@ export const CippBulkInviteGuestDrawer = ({
                   label="E-mail Address"
                   type="textField"
                   formControl={formControl}
+                  validators={{
+                    required: "E-mail address is required",
+                    validate: (value) => !value || getCippValidator(value, "email"),
+                  }}
                 />
               </Grid>
               <Grid size={{ xs: 12 }}>

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Divider, Button } from "@mui/material";
+import { CippIcons } from "../../utils/icon-registry";
+import { Divider, Button, Stack } from "@mui/material";
 import { Grid } from "@mui/system";
 import { useForm, useFormState } from "react-hook-form";
-import { PostAdd } from "@mui/icons-material";
 import { CippOffCanvas } from "./CippOffCanvas";
 import CippFormComponent from "./CippFormComponent";
 import { CippFormTenantSelector } from "./CippFormTenantSelector";
@@ -55,9 +55,9 @@ export const CippAutopilotStatusPageDrawer = ({
   return (
     <>
       <PermissionButton
-        requiredPermissions={requiredPermissions}
+        {...(PermissionButton !== Button ? { requiredPermissions } : {})}
         onClick={() => setDrawerVisible(true)}
-        startIcon={<PostAdd />}
+        startIcon={<CippIcons.PostAdd />}
       >
         {buttonText}
       </PermissionButton>
@@ -67,23 +67,26 @@ export const CippAutopilotStatusPageDrawer = ({
         onClose={handleCloseDrawer}
         size="lg"
         footer={
-          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-start" }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSubmit}
-              disabled={!isValid || createStatusPage.isLoading}
-            >
-              {createStatusPage.isLoading
-                ? "Creating..."
-                : createStatusPage.isSuccess
-                ? "Create Another"
-                : "Create Status Page"}
-            </Button>
-            <Button variant="outlined" onClick={handleCloseDrawer}>
-              Close
-            </Button>
-          </div>
+          <Stack spacing={2}>
+            <CippApiResults apiObject={createStatusPage} />
+            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-start" }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+                disabled={!isValid || createStatusPage.isPending}
+              >
+                {createStatusPage.isPending
+                  ? "Creating..."
+                  : createStatusPage.isSuccess
+                  ? "Create Another"
+                  : "Create Status Page"}
+              </Button>
+              <Button variant="outlined" onClick={handleCloseDrawer}>
+                Close
+              </Button>
+            </div>
+          </Stack>
         }
       >
         <Grid container spacing={2}>
@@ -171,8 +174,6 @@ export const CippAutopilotStatusPageDrawer = ({
               formControl={formControl}
             />
           </Grid>
-
-          <CippApiResults apiObject={createStatusPage} />
         </Grid>
       </CippOffCanvas>
     </>

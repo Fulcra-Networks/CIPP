@@ -1,0 +1,125 @@
+import { IconButton, Tooltip } from '@mui/material'
+import { CippIcons } from '../utils/icon-registry'
+import { mkConfig, generateCsv, download } from 'export-to-csv'
+import { getCippFormatting } from '../utils/get-cipp-formatting'
+import { SKIP_RECURSION_KEYS } from '../utils/skip-recursion-keys'
+import { isTenantColumn } from '../utils/tenant-display-names'
+import { sortColumnsByScreenOrder } from '../utils/table-column-order'
+const csvConfig = mkConfig({
+  fieldSeparator: ',',
+  decimalSeparator: '.',
+  useKeysAsHeaders: true,
+})
+
+// Flatten nested objects so deeply nested properties export as dotted columns.
+const flattenObject = (obj, parentKey = '') => {
+  const flattened = {}
+  Object.keys(obj).forEach((key) => {
+    const fullKey = parentKey ? `${parentKey}.${key}` : key
+    if (
+      typeof obj[key] === 'object' &&
+      obj[key] !== null &&
+      !Array.isArray(obj[key]) &&
+      !SKIP_RECURSION_KEYS.includes(key)
+    ) {
+      Object.assign(flattened, flattenObject(obj[key], fullKey))
+    } else if (Array.isArray(obj[key]) && typeof obj[key][0] === 'string') {
+      flattened[fullKey] = obj[key]
+    } else if (Array.isArray(obj[key])) {
+      let testFormatting = getCippFormatting(obj[key], key, 'text', false, false)
+      if (typeof testFormatting === 'string' && !testFormatting.includes('[object Object]')) {
+        flattened[fullKey] = testFormatting
+      } else {
+        flattened[fullKey] = obj[key]
+          .map((item) =>
+            typeof item === 'object'
+              ? JSON.stringify(
+                  Object.fromEntries(
+                    Object.entries(flattenObject(item)).map(([k, v]) => [
+                      k,
+                      getCippFormatting(v, k, 'text', false),
+                    ])
+                  )
+                )
+              : getCippFormatting(item, fullKey, 'text', false, false)
+          )
+          .join(', ')
+      }
+    } else {
+      flattened[fullKey] = obj[key]
+    }
+  })
+  return flattened
+}
+
+// Shared helper so both toolbar buttons and bulk actions reuse identical CSV logic.
+export const exportRowsToCsv = ({
+  rows = [],
+  columns = [],
+  reportName = 'Export',
+  columnVisibility = {},
+}) => {
+  if (!rows.length) {
+    return
+  }
+
+  const rowData = rows.map((row) => flattenObject(row.original ?? row))
+  // Without table columns (a page that is not a table), every field is exported
+  const columnKeys = columns.length
+    ? sortColumnsByScreenOrder(rows, columns)
+        .filter((c) => columnVisibility[c.id])
+        .map((c) => c.id)
+    : [...new Set(rowData.flatMap((row) => Object.keys(row)))]
+
+  const filterRowData = (row, allowedKeys) => {
+    const filteredRow = {}
+    allowedKeys.forEach((key) => {
+      filteredRow[key] = key in row ? row[key] : null
+    })
+    return filteredRow
+  }
+
+  const filteredData = rowData.map((row) => filterRowData(row, columnKeys))
+
+  // Apply standard CIPP formatting so CSV values match on-screen representations.
+  const formattedData = filteredData.map((row, index) => {
+    const formattedRow = {}
+    columnKeys.forEach((key) => {
+      // A table row resolves tenant columns to names when the table shows them
+      if (isTenantColumn(key) && typeof rows[index].getValue === 'function') {
+        formattedRow[key] = rows[index].getValue(key)
+        return
+      }
+      const value = row[key]
+      if (typeof value === 'string') {
+        formattedRow[key] = value
+        return
+      }
+
+      formattedRow[key] = getCippFormatting(value, key, 'text', false)
+    })
+    return formattedRow
+  })
+
+  const csv = generateCsv(csvConfig)(formattedData)
+  csvConfig['filename'] = `${reportName}`
+  download(csvConfig)(csv)
+}
+
+export const CSVExportButton = (props) => {
+  const { rows = [], columns = [], reportName, columnVisibility = {}, ...other } = props
+
+  return (
+    <Tooltip title="Export to CSV">
+      <span>
+        <IconButton
+          disabled={rows.length === 0}
+          onClick={() => exportRowsToCsv({ rows, columns, reportName, columnVisibility })}
+          {...other}
+        >
+          <CippIcons.BackupTableTwoTone />
+        </IconButton>
+      </span>
+    </Tooltip>
+  )
+}

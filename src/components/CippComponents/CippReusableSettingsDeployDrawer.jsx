@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
+import { CippIcons } from "../../utils/icon-registry";
 import { Button, Stack } from "@mui/material";
-import { RocketLaunch } from "@mui/icons-material";
 import { useForm, useWatch, useFormState } from "react-hook-form";
 import { CippOffCanvas } from "./CippOffCanvas";
 import { ApiGetCall, ApiPostCall } from "../../api/ApiCall";
@@ -90,7 +90,7 @@ export const CippReusableSettingsDeployDrawer = ({
       <PermissionButton
         requiredPermissions={requiredPermissions}
         onClick={() => setDrawerVisible(true)}
-        startIcon={<RocketLaunch />}
+        startIcon={<CippIcons.RocketLaunch />}
       >
         {buttonText}
       </PermissionButton>
@@ -100,18 +100,21 @@ export const CippReusableSettingsDeployDrawer = ({
         onClose={handleCloseDrawer}
         size="lg"
         footer={
-          <Stack direction="row" spacing={2}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSubmit}
-              disabled={deploy.isLoading || !isValid}
-            >
-              {deploy.isLoading ? "Deploying..." : "Deploy"}
-            </Button>
-            <Button variant="outlined" onClick={handleCloseDrawer}>
-              Close
-            </Button>
+          <Stack spacing={2}>
+            <CippApiResults apiObject={deploy} />
+            <Stack direction="row" spacing={2}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+                disabled={deploy.isPending || !isValid}
+              >
+                {deploy.isPending ? "Deploying..." : "Deploy"}
+              </Button>
+              <Button variant="outlined" onClick={handleCloseDrawer}>
+                Close
+              </Button>
+            </Stack>
           </Stack>
         }
       >
@@ -160,7 +163,6 @@ export const CippReusableSettingsDeployDrawer = ({
             />
           </Grid>
           <CippJsonView object={safeJson()} type="intune" />
-          <CippApiResults apiObject={deploy} />
         </Stack>
       </CippOffCanvas>
     </>

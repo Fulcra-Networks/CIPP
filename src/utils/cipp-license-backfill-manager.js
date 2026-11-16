@@ -4,10 +4,20 @@
  */
 
 import { getMissingFromCache, addLicensesToCache } from "./cipp-license-cache";
+import { isTenantGroup } from "./tenant-selection";
+
+const getCurrentTenant = () => {
+  try {
+    return JSON.parse(localStorage.getItem("app.settings"))?.currentTenant || null;
+  } catch {
+    return null;
+  }
+};
 
 class LicenseBackfillManager {
   constructor() {
     this.pendingSkuIds = new Set();
+    this.requestedKeys = new Set();
     this.isBackfilling = false;
     this.backfillTimeout = null;
     this.callbacks = new Set();
@@ -41,9 +51,14 @@ class LicenseBackfillManager {
   addMissingSkuIds(skuIds) {
     if (!Array.isArray(skuIds)) return;
 
+    const tenant = getCurrentTenant();
     let added = false;
     skuIds.forEach((skuId) => {
-      if (skuId && !this.pendingSkuIds.has(skuId)) {
+      if (
+        skuId &&
+        !this.pendingSkuIds.has(skuId) &&
+        !this.requestedKeys.has(`${tenant}|${skuId}`)
+      ) {
         this.pendingSkuIds.add(skuId);
         added = true;
       }
@@ -80,6 +95,8 @@ class LicenseBackfillManager {
     // Get all pending skuIds
     const skuIdsToFetch = Array.from(this.pendingSkuIds);
     this.pendingSkuIds.clear();
+    const tenantFilter = getCurrentTenant();
+    skuIdsToFetch.forEach((skuId) => this.requestedKeys.add(`${tenantFilter}|${skuId}`));
     this.isBackfilling = true;
 
     try {
@@ -91,7 +108,8 @@ class LicenseBackfillManager {
 
       const response = await axios.post(
         "/api/ExecLicenseSearch",
-        { skuIds: skuIdsToFetch },
+        // The tenant is only a fallback for SKU names; ExecLicenseSearch does not take a group
+        { skuIds: skuIdsToFetch, ...(isTenantGroup(tenantFilter) ? {} : { tenantFilter }) },
         { headers: await buildVersionedHeaders() }
       );
 
@@ -149,6 +167,7 @@ class LicenseBackfillManager {
       this.backfillTimeout = null;
     }
     this.pendingSkuIds.clear();
+    this.requestedKeys.clear();
     this.isBackfilling = false;
     this.callbacks.clear();
   }

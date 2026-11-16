@@ -1,8 +1,8 @@
 ﻿import React, { useState, useEffect } from "react";
-import { Button, InputAdornment, Divider } from "@mui/material";
+import { Button, InputAdornment, Divider, Stack } from "@mui/material";
+import { CippIcons } from "../../utils/icon-registry";
 import { Grid } from "@mui/system";
 import { useForm, useFormState } from "react-hook-form";
-import { ListAlt } from "@mui/icons-material";
 import { CippOffCanvas } from "./CippOffCanvas";
 import CippFormComponent from "./CippFormComponent";
 import { CippFormDomainSelector } from "./CippFormDomainSelector";
@@ -80,9 +80,9 @@ export const CippAddRoomListDrawer = ({
   return (
     <>
       <PermissionButton
-        requiredPermissions={requiredPermissions}
+        {...(PermissionButton !== Button ? { requiredPermissions } : {})}
         onClick={() => setDrawerVisible(true)}
-        startIcon={<ListAlt />}
+        startIcon={<CippIcons.ListAlt />}
       >
         {buttonText}
       </PermissionButton>
@@ -92,23 +92,26 @@ export const CippAddRoomListDrawer = ({
         onClose={handleCloseDrawer}
         size="md"
         footer={
-          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-start" }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSubmit}
-              disabled={addRoomList.isLoading || !isValid}
-            >
-              {addRoomList.isLoading
-                ? "Creating..."
-                : addRoomList.isSuccess
-                ? "Create Another"
-                : "Create Room List"}
-            </Button>
-            <Button variant="outlined" onClick={handleCloseDrawer}>
-              Close
-            </Button>
-          </div>
+          <Stack spacing={2}>
+            <CippApiResults apiObject={addRoomList} />
+            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-start" }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+                disabled={addRoomList.isPending || !isValid}
+              >
+                {addRoomList.isPending
+                  ? "Creating..."
+                  : addRoomList.isSuccess
+                  ? "Create Another"
+                  : "Create Room List"}
+              </Button>
+              <Button variant="outlined" onClick={handleCloseDrawer}>
+                Close
+              </Button>
+            </div>
+          </Stack>
         }
       >
         <Grid container spacing={2}>
@@ -136,9 +139,7 @@ export const CippAddRoomListDrawer = ({
                     "Username can only contain letters, numbers, hyphens, underscores, and periods",
                 },
               }}
-              InputProps={{
-                endAdornment: <InputAdornment position="end">@</InputAdornment>,
-              }}
+              slotProps={{ input: { endAdornment: <InputAdornment position="end">@</InputAdornment> } }}
             />
           </Grid>
 
@@ -150,8 +151,6 @@ export const CippAddRoomListDrawer = ({
               validators={{ required: "Domain is required" }}
             />
           </Grid>
-
-          <CippApiResults apiObject={addRoomList} />
         </Grid>
       </CippOffCanvas>
     </>

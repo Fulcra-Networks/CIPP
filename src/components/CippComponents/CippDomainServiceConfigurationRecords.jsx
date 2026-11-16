@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { CippIcons } from "../../utils/icon-registry";
 import { useSettings } from "../../hooks/use-settings";
 import { ApiGetCall } from "../../api/ApiCall";
 import {
@@ -13,7 +14,7 @@ import {
   Chip,
   CircularProgress,
 } from "@mui/material";
-import { ContentCopy, Check } from "@mui/icons-material";
+import { tenantScope } from "../../utils/tenant-selection";
 
 const DnsRecordField = ({ label, value, copyable = true }) => {
   const [copied, setCopied] = useState(false);
@@ -37,7 +38,7 @@ const DnsRecordField = ({ label, value, copyable = true }) => {
       {copyable && (
         <Tooltip title={copied ? "Copied!" : "Copy"}>
           <IconButton size="small" onClick={handleCopy} sx={{ ml: 1, flexShrink: 0 }}>
-            {copied ? <Check fontSize="small" /> : <ContentCopy fontSize="small" />}
+            {copied ? <CippIcons.Check fontSize="small" /> : <CippIcons.ContentCopy fontSize="small" />}
           </IconButton>
         </Tooltip>
       )}
@@ -87,7 +88,7 @@ export const CippDomainServiceConfigurationRecords = ({ row }) => {
     waiting: true,
     data: {
       Endpoint: `domains/${row.id}/serviceConfigurationRecords`,
-      tenantFilter: tenantFilter,
+      ...tenantScope(tenantFilter),
     },
   });
 
@@ -115,7 +116,9 @@ export const CippDomainServiceConfigurationRecords = ({ row }) => {
         <Card key={record.id} variant="outlined">
           <CardHeader
             title={
-              <Stack direction="row" spacing={1} alignItems="center">
+              <Stack direction="row" spacing={1} sx={{
+                alignItems: "center"
+              }}>
                 <Typography variant="subtitle1">{record.label}</Typography>
                 <Chip label={record.recordType} size="small" variant="outlined" />
                 <Chip label={record.supportedService} size="small" />

@@ -1,8 +1,8 @@
 ﻿import React, { useState, useEffect } from "react";
-import { Button, Divider } from "@mui/material";
+import { Button, Divider, Stack } from "@mui/material";
+import { CippIcons } from "../../utils/icon-registry";
 import { Grid } from "@mui/system";
 import { useForm, useFormState } from "react-hook-form";
-import { AddBusiness } from "@mui/icons-material";
 import { CippOffCanvas } from "./CippOffCanvas";
 import CippFormComponent from "./CippFormComponent";
 import { CippFormDomainSelector } from "./CippFormDomainSelector";
@@ -31,7 +31,7 @@ export const CippAddEquipmentDrawer = ({
 
   const addEquipment = ApiPostCall({
     urlFromData: true,
-    relatedQueryKeys: [`EquipmentMailbox-${tenantDomain}`],
+    relatedQueryKeys: [`Equipment - ${tenantDomain}`],
   });
 
   // Reset form fields on successful creation
@@ -60,7 +60,7 @@ export const CippAddEquipmentDrawer = ({
     addEquipment.mutate({
       url: "/api/AddEquipmentMailbox",
       data: shippedValues,
-      relatedQueryKeys: [`EquipmentMailbox-${tenantDomain}`],
+      relatedQueryKeys: [`Equipment - ${tenantDomain}`],
     });
   };
 
@@ -79,9 +79,9 @@ export const CippAddEquipmentDrawer = ({
   return (
     <>
       <PermissionButton
-        requiredPermissions={requiredPermissions}
+        {...(PermissionButton !== Button ? { requiredPermissions } : {})}
         onClick={() => setDrawerVisible(true)}
-        startIcon={<AddBusiness />}
+        startIcon={<CippIcons.AddBusiness />}
       >
         {buttonText}
       </PermissionButton>
@@ -91,23 +91,26 @@ export const CippAddEquipmentDrawer = ({
         onClose={handleCloseDrawer}
         size="md"
         footer={
-          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-start" }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSubmit}
-              disabled={addEquipment.isLoading || !isValid}
-            >
-              {addEquipment.isLoading
-                ? "Creating..."
-                : addEquipment.isSuccess
-                ? "Create Another"
-                : "Create Equipment Mailbox"}
-            </Button>
-            <Button variant="outlined" onClick={handleCloseDrawer}>
-              Close
-            </Button>
-          </div>
+          <Stack spacing={2}>
+            <CippApiResults apiObject={addEquipment} />
+            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-start" }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+                disabled={addEquipment.isPending || !isValid}
+              >
+                {addEquipment.isPending
+                  ? "Creating..."
+                  : addEquipment.isSuccess
+                  ? "Create Another"
+                  : "Create Equipment Mailbox"}
+              </Button>
+              <Button variant="outlined" onClick={handleCloseDrawer}>
+                Close
+              </Button>
+            </div>
+          </Stack>
         }
       >
         <Grid container spacing={2}>
@@ -142,8 +145,6 @@ export const CippAddEquipmentDrawer = ({
               validators={{ required: "Please select a domain" }}
             />
           </Grid>
-
-          <CippApiResults apiObject={addEquipment} />
         </Grid>
       </CippOffCanvas>
     </>
