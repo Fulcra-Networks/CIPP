@@ -11,6 +11,7 @@ import GDAPRoles from "../../../../data/GDAPRoles";
 import {
   buildGdapTemplatePayload,
   buildGdapTemplateSelection,
+  gdapTemplatePartnerOption,
 } from "../../../../utils/gdap-role-options";
 
 const Page = () => {
@@ -51,6 +52,7 @@ const Page = () => {
         templateId: template.TemplateId,
         roleMappings: selection.selected,
         customSuffix: selection.customSuffix ?? "",
+        partnerTenant: gdapTemplatePartnerOption(template),
       });
     }
   }, [
@@ -63,9 +65,10 @@ const Page = () => {
   return (
     <>
       <CippFormPage
-        queryKey={["ListGDAPRoleTemplates", "ListGDAPRoles"]}
+        queryKey={["ListGDAPRoleTemplates*", "ListGDAPRoles"]}
         formControl={formControl}
         title="GDAP Role Template"
+        formPageType="Edit"
         backButtonTitle="Role Templates"
         postUrl="/api/ExecGDAPRoleTemplate?Action=Save"
         customDataformatter={(values) =>
@@ -92,6 +95,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout usesTenant={false}>{page}</DashboardLayout>;
 
 export default Page;

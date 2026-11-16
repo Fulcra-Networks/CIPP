@@ -11,6 +11,7 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   Alert,
+  Stack,
 } from '@mui/material'
 import { Grid } from '@mui/system'
 import { useForm, useWatch } from 'react-hook-form'
@@ -20,6 +21,7 @@ import { CippFormCondition } from './CippFormCondition'
 import { CippApiResults } from './CippApiResults'
 import { ApiGetCall, ApiPostCall } from '../../api/ApiCall'
 import languageList from '../../data/languageList.json'
+import edgeLanguageList from '../../data/edgeLanguageList.json'
 
 const appTypeLabels = {
   mspApp: 'MSP Vendor App',
@@ -294,26 +296,29 @@ export const CippAppTemplateDrawer = ({
         onClose={handleClose}
         size="xl"
         footer={
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSaveTemplate}
-              disabled={getTotalApps() === 0 || saveTemplate.isPending}
-              startIcon={<CippIcons.Save />}
-            >
-              {saveTemplate.isPending
-                ? 'Saving...'
-                : saveTemplate.isSuccess
-                  ? editGUID
-                    ? 'Saved'
-                    : 'Save Another'
-                  : `${editGUID ? 'Update' : 'Save'} Template (${getTotalApps()} app${getTotalApps() !== 1 ? 's' : ''})`}
-            </Button>
-            <Button variant="outlined" onClick={handleClose}>
-              Close
-            </Button>
-          </div>
+          <Stack spacing={2}>
+            <CippApiResults apiObject={saveTemplate} />
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSaveTemplate}
+                disabled={getTotalApps() === 0 || saveTemplate.isPending}
+                startIcon={<CippIcons.Save />}
+              >
+                {saveTemplate.isPending
+                  ? 'Saving...'
+                  : saveTemplate.isSuccess
+                    ? editGUID
+                      ? 'Saved'
+                      : 'Save Another'
+                    : `${editGUID ? 'Update' : 'Save'} Template (${getTotalApps()} app${getTotalApps() !== 1 ? 's' : ''})`}
+              </Button>
+              <Button variant="outlined" onClick={handleClose}>
+                Close
+              </Button>
+            </div>
+          </Stack>
         }
       >
         <Grid container spacing={2}>
@@ -411,6 +416,7 @@ export const CippAppTemplateDrawer = ({
                   { value: 'huntress', label: 'Huntress' },
                   { value: 'automate', label: 'CW Automate' },
                   { value: 'cwcommand', label: 'CW Command' },
+                  { value: 'ninja', label: 'NinjaOne' },
                 ]}
                 formControl={formControl}
                 multiple={false}
@@ -546,6 +552,23 @@ export const CippAppTemplateDrawer = ({
                   type="textField"
                   label="Client URL (e.g., %CWCommandClientURL%)"
                   name="params.ClientURL"
+                  formControl={formControl}
+                />
+              </Grid>
+            </CippFormCondition>
+
+            {/* NinjaOne */}
+            <CippFormCondition
+              formControl={formControl}
+              field="rmmname.value"
+              compareType="is"
+              compareValue="ninja"
+            >
+              <Grid size={{ xs: 12 }}>
+                <CippFormComponent
+                  type="textFieldWithVariables"
+                  label="Installer Token (e.g., %NinjaOneToken%)"
+                  name="params.NinjaToken"
                   formControl={formControl}
                 />
               </Grid>
@@ -886,7 +909,7 @@ export const CippAppTemplateDrawer = ({
                 type="autoComplete"
                 label="Display Language (optional)"
                 name="displayLanguageLocale"
-                options={languageList.map(({ language, tag }) => ({
+                options={edgeLanguageList.map(({ language, tag }) => ({
                   value: tag,
                   label: `${language} (${tag})`,
                 }))}
@@ -1092,8 +1115,6 @@ export const CippAppTemplateDrawer = ({
               </Button>
             </Grid>
           )}
-
-          <CippApiResults apiObject={saveTemplate} />
         </Grid>
       </CippOffCanvas>
     </>

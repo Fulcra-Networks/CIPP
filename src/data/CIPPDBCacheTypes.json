@@ -55,14 +55,24 @@
     "description": "Authentication methods policy configuration"
   },
   {
-    "type": "DeviceSettings",
-    "friendlyName": "Device Settings",
-    "description": "Device management settings"
-  },
-  {
     "type": "DirectoryRecommendations",
     "friendlyName": "Directory Recommendations",
     "description": "Azure AD directory recommendations"
+  },
+  {
+    "type": "ServiceHealthOverviews",
+    "friendlyName": "Service Health Overviews",
+    "description": "Microsoft 365 service health status per workload"
+  },
+  {
+    "type": "ServiceHealthIssues",
+    "friendlyName": "Service Health Issues",
+    "description": "Microsoft 365 service health incidents and advisories, including their post history"
+  },
+  {
+    "type": "MessageCenterMessages",
+    "friendlyName": "Message Center Posts",
+    "description": "Microsoft 365 message center announcements, including body and rollout details"
   },
   {
     "type": "CrossTenantAccessPolicy",
@@ -75,6 +85,11 @@
     "description": "Default application management policy"
   },
   {
+    "type": "ActivityBasedTimeoutPolicy",
+    "friendlyName": "Activity Based Timeout Policy",
+    "description": "Idle session timeout policies for Microsoft 365 web apps"
+  },
+  {
     "type": "Settings",
     "friendlyName": "Directory Settings",
     "description": "Directory settings configuration"
@@ -83,6 +98,12 @@
     "type": "SecureScore",
     "friendlyName": "Secure Score",
     "description": "Microsoft Secure Score and control profiles"
+  },
+  {
+    "type": "SecureScoreSummary",
+    "collectedBy": "SecureScore",
+    "friendlyName": "Secure Score Summary",
+    "description": "Compact per-tenant secure score, history and per-control results used by the All Tenants secure score views"
   },
   {
     "type": "PIMSettings",
@@ -98,6 +119,11 @@
     "type": "RoleEligibilitySchedules",
     "friendlyName": "Role Eligibility Schedules",
     "description": "PIM role eligibility schedules"
+  },
+  {
+    "type": "PIMGroupEligibilitySchedules",
+    "friendlyName": "PIM for Groups Eligibility",
+    "description": "Who is eligible for membership or ownership of role-assignable groups through PIM for Groups, with the users inside eligible groups"
   },
   {
     "type": "RoleManagementPolicies",
@@ -125,14 +151,39 @@
     "description": "Device registration policy settings"
   },
   {
-    "type": "CredentialUserRegistrationDetails",
-    "friendlyName": "Credential User Registration Details",
-    "description": "User credential registration details"
-  },
-  {
     "type": "UserRegistrationDetails",
     "friendlyName": "User Registration Details",
     "description": "MFA registration details for users"
+  },
+  {
+    "type": "ServicePrincipalSignInActivities",
+    "friendlyName": "Service Principal Sign-In Activity",
+    "description": "Last sign-in of every app, delegated or app-only (Entra ID P1)"
+  },
+  {
+    "type": "AppCredentialSignInActivities",
+    "friendlyName": "App Credential Sign-In Activity",
+    "description": "Last sign-in of every app secret and certificate that signed in (Entra ID P1)"
+  },
+  {
+    "type": "AppFederatedCredentials",
+    "friendlyName": "App Federated Credentials",
+    "description": "Federated identity credentials on app registrations: the issuer and subject whose tokens sign in as the app"
+  },
+  {
+    "type": "AppCredentialChanges",
+    "friendlyName": "App Credential Changes",
+    "description": "Secrets and certificates added to apps in the last 30 days and who added them (Entra ID P1)"
+  },
+  {
+    "type": "ServicePrincipalRoleChanges",
+    "friendlyName": "Service Principal Role Changes",
+    "description": "Directory roles and group memberships given to apps in the last 30 days and who gave them (Entra ID P1)"
+  },
+  {
+    "type": "DelegatedGrantChanges",
+    "friendlyName": "Delegated Grant Changes",
+    "description": "Delegated permission grants added in the last 30 days and who added them, a user or an app (Entra ID P1)"
   },
   {
     "type": "OAuth2PermissionGrants",
@@ -148,6 +199,16 @@
     "type": "LicenseOverview",
     "friendlyName": "License Overview",
     "description": "License usage overview"
+  },
+  {
+    "type": "ActiveUserDetail",
+    "friendlyName": "Active User Detail",
+    "description": "Per-user last-activity dates for Exchange, OneDrive, SharePoint, Teams and Viva Engage over 90 days"
+  },
+  {
+    "type": "M365AppUserDetail",
+    "friendlyName": "Microsoft 365 App Usage Detail",
+    "description": "Per-user Office app usage by platform (Windows, Mac, mobile, web) over 90 days"
   },
   {
     "type": "MFAState",
@@ -193,6 +254,16 @@
     "type": "ExoAcceptedDomains",
     "friendlyName": "Exchange Accepted Domains",
     "description": "Exchange Online accepted domains"
+  },
+  {
+    "type": "ExoApplicationAccessPolicies",
+    "friendlyName": "Exchange Application Access Policies",
+    "description": "Exchange application access policies: the app, RestrictAccess or DenyAccess, the group it applies to and whether it is valid"
+  },
+  {
+    "type": "ExoAppRoleAssignments",
+    "friendlyName": "Exchange Application Role Assignments",
+    "description": "Exchange RBAC for Applications role assignments: the app, the Application role, its management scope or administrative unit and when it was created"
   },
   {
     "type": "ExoHostedContentFilterPolicy",
@@ -255,9 +326,19 @@
     "description": "Client Access Server mailbox settings"
   },
   {
+    "type": "ExoCASMailboxSmtpAuth",
+    "friendlyName": "CAS Mailbox SMTP AUTH Overrides",
+    "description": "Mailboxes with SMTP AUTH explicitly enabled despite the tenant default"
+  },
+  {
     "type": "MailboxUsage",
     "friendlyName": "Mailbox Usage",
     "description": "Exchange Online mailbox usage statistics"
+  },
+  {
+    "type": "MailTrafficSummary",
+    "friendlyName": "Mail Traffic Summary",
+    "description": "Top mail senders and recipients by message volume over the last 30 days"
   },
   {
     "type": "OneDriveSiteListing",
@@ -287,9 +368,14 @@
     "description": "SharePoint site usage statistics"
   },
   {
+    "type": "SharePointUsageReport",
+    "friendlyName": "SharePoint Usage Report (Tenant-level)",
+    "description": "Aggregated SharePoint storage usage across all sites in the tenant"
+  },
+  {
     "type": "SPOSites",
     "friendlyName": "SharePoint Site Settings",
-    "description": "Per-site SharePoint admin settings (site owner, sharing controls, lifecycle, version policy, People Picker, unmanaged-device access) for every site collection, keyed by site id"
+    "description": "Per-site SharePoint settings (URL, title, template, guest People Picker suggestions) for every site collection, keyed by site id"
   },
   {
     "type": "SiteActivity",
@@ -370,6 +456,11 @@
     "type": "IntuneAppInstallStatus",
     "friendlyName": "Intune App Install Status",
     "description": "Per-application install status rollup (failed/installed/pending device counts) from the AppInstallStatusAggregate report"
+  },
+  {
+    "type": "IntuneNonCompliantSettings",
+    "friendlyName": "Intune Non-Compliant Settings",
+    "description": "Every failing compliance setting on every non-compliant device from the NoncompliantDevicesAndSettingsV3 report"
   },
   {
     "type": "DomainAnalyser",

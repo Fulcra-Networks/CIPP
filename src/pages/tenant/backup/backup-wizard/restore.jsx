@@ -8,10 +8,12 @@ import CippFormComponent from "../../../../components/CippComponents/CippFormCom
 import { useSettings } from "../../../../hooks/use-settings";
 import { CippFormCondition } from "../../../../components/CippComponents/CippFormCondition";
 import { Chip, Stack } from "@mui/material";
+import { useTenantLabel } from "../../../../hooks/use-tenant-label";
 
 const RestoreBackupForm = () => {
   const userSettingsDefaults = useSettings();
   const tenantFilter = userSettingsDefaults.currentTenant || "";
+  const tenantLabel = useTenantLabel(tenantFilter);
 
   const formControl = useForm({
     mode: "onChange",
@@ -25,6 +27,7 @@ const RestoreBackupForm = () => {
       intuneprotection: true,
       antispam: true,
       antiphishing: true,
+      teamsvoice: true,
       CippWebhookAlerts: true,
       CippScriptedAlerts: true,
       CippStandards: true,
@@ -85,6 +88,7 @@ const RestoreBackupForm = () => {
               intuneprotection: values.intuneprotection,
               antispam: values.antispam,
               antiphishing: values.antiphishing,
+              teamsvoice: values.teamsvoice,
               CippWebhookAlerts: values.CippWebhookAlerts,
               CippScriptedAlerts: values.CippScriptedAlerts,
               overwrite: values.overwrite,
@@ -111,7 +115,7 @@ const RestoreBackupForm = () => {
         <Grid size={{ xs: 12 }}>
           <CippFormComponent
             type="autoComplete"
-            label={`Backups for ${tenantFilter}`}
+            label={`Backups for ${tenantLabel}`}
             name="backup"
             multiple={false}
             api={{
@@ -199,6 +203,17 @@ const RestoreBackupForm = () => {
             type="switch"
             label="Anti-Phishing Policies"
             name="antiphishing"
+            formControl={formControl}
+          />
+        </Grid>
+
+        {/* Teams */}
+        <Grid size={{ md: 6, xs: 12 }}>
+          <Typography variant="subtitle1">Teams</Typography>
+          <CippFormComponent
+            type="switch"
+            label="Teams Phone Number Assignments"
+            name="teamsvoice"
             formControl={formControl}
           />
         </Grid>

@@ -126,7 +126,7 @@ const Page = () => {
           icon: <CippIcons.Delete />,
           url: "/api/RemoveCustomScript",
           type: "POST",
-          relatedquerykeys: ["ListAvailableTests"],
+          relatedQueryKeys: ["ListAvailableTests"],
           data: {
             ScriptGuid: "ScriptGuid",
           },
@@ -180,6 +180,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout usesTenant={false}>{page}</DashboardLayout>;
 
 export default Page;

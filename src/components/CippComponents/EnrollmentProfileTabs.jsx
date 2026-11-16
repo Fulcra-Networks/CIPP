@@ -20,6 +20,7 @@ import CippJsonView from '../CippFormPages/CippJSONView.jsx'
 import { ApiGetCall } from '../../api/ApiCall.jsx'
 import { useDialog } from '../../hooks/use-dialog.js'
 import { useSettings } from '../../hooks/use-settings.js'
+import { useTenantLabel } from '../../hooks/use-tenant-label'
 
 const pageTitle = 'Enrollment Profiles'
 const appleADEPageTitle = 'Apple Enrollment Profiles'
@@ -142,6 +143,7 @@ const AndroidQrDialog = ({ row, drawerVisible, setDrawerVisible }) => {
 
 export const AppleADEEnrollmentProfiles = () => {
   const currentTenant = useSettings().currentTenant
+  const tenantLabel = useTenantLabel(currentTenant)
   const depSyncDialog = useDialog()
 
   const appleProfiles = ApiGetCall({
@@ -305,7 +307,7 @@ export const AppleADEEnrollmentProfiles = () => {
 
         <Card>
           <CippDataTable
-            title={`Apple ADE Profiles - ${currentTenant}`}
+            title={`Apple ADE Profiles - ${tenantLabel}`}
             queryKey={`AppleEnrollmentProfilesTable-${currentTenant}`}
             data={profiles}
             isFetching={appleProfiles.isFetching}
@@ -343,7 +345,7 @@ export const AppleADEEnrollmentProfiles = () => {
           type: 'POST',
           url: '/api/ExecSyncDEP',
           data: {},
-          confirmText: `Are you sure you want to sync Apple Device Enrollment Program (DEP) tokens for ${currentTenant}?`,
+          confirmText: `Are you sure you want to sync Apple Device Enrollment Program (DEP) tokens for ${tenantLabel}?`,
         }}
       />
     </>
@@ -352,6 +354,7 @@ export const AppleADEEnrollmentProfiles = () => {
 
 export const AndroidEnterpriseEnrollmentProfiles = () => {
   const currentTenant = useSettings().currentTenant
+  const tenantLabel = useTenantLabel(currentTenant)
   const androidActions = [
     {
       label: 'Show QR',
@@ -386,7 +389,7 @@ export const AndroidEnterpriseEnrollmentProfiles = () => {
     <EnrollmentProfilesPage title={androidEnterprisePageTitle}>
       <Card>
         <CippDataTable
-          title={`Android Enterprise Enrollment Profiles - ${currentTenant}`}
+          title={`Android Enterprise Enrollment Profiles - ${tenantLabel}`}
           queryKey={`AndroidEnrollmentProfiles-${currentTenant}`}
           api={{
             url: '/api/ListAndroidEnrollmentProfiles',
@@ -417,11 +420,12 @@ export const AndroidEnterpriseEnrollmentProfiles = () => {
 
 export const WindowsAutopilotEnrollmentProfiles = () => {
   const currentTenant = useSettings().currentTenant
+  const tenantLabel = useTenantLabel(currentTenant)
 
   const groupsQuery = ApiGetCall({
     url: '/api/ListGroups',
     data: { tenantFilter: currentTenant },
-    queryKey: `ListGroups-${currentTenant}`,
+    queryKey: `ListGroupsMap-${currentTenant}`,
     waiting: Boolean(currentTenant),
   })
   const groupMap = useMemo(() => {
@@ -567,21 +571,17 @@ export const WindowsAutopilotEnrollmentProfiles = () => {
     <EnrollmentProfilesPage title={windowsAutopilotPageTitle}>
       <Card>
         <CippDataTable
-          title={`Windows Autopilot Profiles - ${currentTenant}`}
+          title={`Windows Autopilot Profiles - ${tenantLabel}`}
           queryKey={`AutopilotProfiles-${currentTenant}`}
           api={{
-            url: '/api/ListGraphRequest',
-            data: {
-              tenantFilter: currentTenant,
-              Endpoint: 'deviceManagement/windowsAutopilotDeploymentProfiles',
-              $expand: 'assignments',
-            },
-            dataKey: 'Results',
+            url: '/api/ListAutopilotConfig',
+            data: { tenantFilter: currentTenant, type: 'ApProfile' },
           }}
           actions={autopilotActions}
           simpleColumns={[
             'displayName',
             'description',
+            'PolicyAssignment',
             'language',
             'extractHardwareHash',
             'deviceNameTemplate',

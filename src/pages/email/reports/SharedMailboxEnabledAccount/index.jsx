@@ -11,6 +11,7 @@ const Page = () => {
     syncTitle: "Sync Shared Mailbox Cache",
     allowToggle: true,
     defaultCached: false,
+    serverPagination: true,
   });
 
   const simpleColumns = [
@@ -18,6 +19,7 @@ const Page = () => {
     "UserPrincipalName",
     "displayName",
     "accountEnabled",
+    "lastSuccessfulSignInDateTime",
     "assignedLicenses",
     "onPremisesSyncEnabled",
     ...reportDB.cacheColumns.filter((c) => c !== "Tenant"),
@@ -28,6 +30,8 @@ const Page = () => {
       <CippTablePage
         title="Shared Mailbox with Enabled Account"
         apiUrl={reportDB.resolvedApiUrl}
+        apiData={reportDB.resolvedApiData}
+        apiDataKey={reportDB.apiDataKey}
         queryKey={reportDB.resolvedQueryKey}
         dataSourceControls={reportDB.controls}
         actions={[
@@ -46,6 +50,7 @@ const Page = () => {
             "UserPrincipalName",
             "displayName",
             "accountEnabled",
+            "lastSuccessfulSignInDateTime",
             "assignedLicenses",
             "onPremisesSyncEnabled",
           ],
@@ -63,7 +68,7 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout allTenantsSupport={true}>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout tenantGroupSupport={true} allTenantsSupport={true}>{page}</DashboardLayout>;
 
 export default Page;
 

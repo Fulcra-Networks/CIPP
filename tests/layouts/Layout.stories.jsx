@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { within, expect, waitFor } from 'storybook/test'
 import { http, HttpResponse } from 'msw'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Layout } from '../../src/layouts/index'
+import { SettingsContext } from '../../src/contexts/settings-context'
+import { useSettings } from '../../src/hooks/use-settings'
 
 // authenticated principal: side-nav needs userRoles.length > 2, permissions
 // drive nativeMenuItems filtering ('CIPP.Core.Read' matches 'CIPP.Core.*')
@@ -229,5 +231,88 @@ export const MaintenanceMinimal = {
       ).toBeInTheDocument()
       await expect(within(banner).queryByRole('link', { name: 'Details' })).toBeNull()
     })
+  },
+}
+
+// Shaped exactly as Get-CIPPLegacyInfrastructureNotice emits it for a self-hosted instance that is
+// still on Function Apps. No window, so no countdown line and no Live chip - just a standing
+// warning with the migration guide.
+export const LegacyInfrastructure = {
+  args: { children },
+  parameters: {
+    msw: {
+      handlers: makeHandlers([
+        maintenanceAlert({
+          title: 'Legacy infrastructure',
+          Alert:
+            'This CIPP instance is running on the legacy Function App infrastructure, which will soon stop receiving updates. Migrate to the new infrastructure to keep receiving new features and fixes. The migration keeps your storage account and Key Vault, so your configuration carries across.',
+          link: 'https://docs.cipp.app/setup/maintaining-cipp/migrating-to-the-new-infrastructure',
+          linkText: 'Migration guide',
+          type: 'warning',
+          noticeId: 'legacy-function-app-infrastructure',
+          startTime: null,
+          endTime: null,
+          active: false,
+          dismissible: false,
+        }),
+      ]),
+    },
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement)
+    await step('banner warns about the legacy platform and links the migration guide', async () => {
+      const banner = await waitFor(() => canvas.getByLabelText('Maintenance notice'))
+      await expect(within(banner).getByText('Legacy infrastructure')).toBeInTheDocument()
+      const guide = within(banner).getByRole('link', { name: 'Migration guide' })
+      await expect(guide).toHaveAttribute(
+        'href',
+        'https://docs.cipp.app/setup/maintaining-cipp/migrating-to-the-new-infrastructure'
+      )
+      await expect(guide).toHaveAttribute('target', '_blank')
+    })
+
+    await step('no window line or Live chip for a standing warning', async () => {
+      const banner = canvas.getByLabelText('Maintenance notice')
+      await expect(within(banner).queryByText('Live')).toBeNull()
+      await expect(within(banner).queryByText(/starts in|ends /i)).toBeNull()
+    })
+
+    await step('a standing warning cannot be dismissed', async () => {
+      const banner = canvas.getByLabelText('Maintenance notice')
+      await expect(
+        within(banner).queryByRole('button', { name: /dismiss maintenance notice/i })
+      ).toBeNull()
+    })
+  },
+}
+
+const withGroupSelected = (Story) => {
+  const settings = useContext(SettingsContext)
+  return (
+    <SettingsContext.Provider value={{ ...settings, currentTenant: 'group:g1' }}>
+      <Story />
+    </SettingsContext.Provider>
+  )
+}
+
+const SelectionProbe = () => <p>Page sees: {useSettings().currentTenant}</p>
+
+export const TenantGroupOnTenantPage = {
+  args: { children: <SelectionProbe /> },
+  decorators: [withGroupSelected],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByText('Pick a tenant or All Tenants')).toBeInTheDocument()
+    await expect(canvas.queryByText(/Page sees:/)).toBeNull()
+  },
+}
+
+export const TenantGroupOnPageWithoutTenant = {
+  args: { children: <SelectionProbe />, usesTenant: false },
+  decorators: [withGroupSelected],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByText('Page sees: AllTenants')).toBeInTheDocument()
+    await expect(canvas.queryByText('Pick a tenant or All Tenants')).toBeNull()
   },
 }

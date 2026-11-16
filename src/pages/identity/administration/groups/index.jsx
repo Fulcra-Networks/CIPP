@@ -1,20 +1,29 @@
-import { Button } from '@mui/material'
 import { CippIcons } from '../../../../utils/icon-registry'
 import { CippTablePage } from '../../../../components/CippComponents/CippTablePage.jsx'
 import { Layout as DashboardLayout } from '../../../../layouts/index'
-import Link from 'next/link'
+import { CippDeployGroupTemplateDrawer } from '../../../../components/CippComponents/CippDeployGroupTemplateDrawer'
 import { Stack } from '@mui/system'
 import { useSettings } from '../../../../hooks/use-settings'
 import { useCippReportDB } from '../../../../components/CippComponents/CippReportDBControls'
 import { getRowTenant } from '../../../../utils/resolve-row-templates'
+import { CippAddGroupDrawer } from '../../../../components/CippComponents/CippAddGroupDrawer'
+import { isMultiTenant, tenantScope } from '../../../../utils/tenant-selection'
 
 const Page = () => {
   const pageTitle = 'Groups'
+  // Microsoft retires memberOf in dynamic membership rules (Nov 3 2026, Mar 31 2027 with ID Governance)
+  const filterList = [
+    {
+      filterName: 'MemberOf rules (retiring)',
+      value: [{ id: 'membershipRule', value: 'memberOf', filterFn: 'contains' }],
+      type: 'column',
+    },
+  ]
   const { currentTenant } = useSettings()
   const tenantQuery =
-    currentTenant === 'AllTenants' ? '[Tenant]' : currentTenant
+    isMultiTenant(currentTenant) ? '[Tenant]' : currentTenant
   const nestedTenantQuery =
-    currentTenant === 'AllTenants' ? '[parent.Tenant]' : currentTenant
+    isMultiTenant(currentTenant) ? '[parent.Tenant]' : currentTenant
 
   const reportDB = useCippReportDB({
     apiUrl: '/api/ListGroups',
@@ -76,7 +85,7 @@ const Page = () => {
         const selectedGroups = Array.isArray(row) ? row : [row]
         return selectedGroups.map((group) => ({
           AddMember: addMember,
-          tenantFilter: getRowTenant(group, currentTenant),
+          ...tenantScope(getRowTenant(group, currentTenant)),
           groupId: group.id,
           groupName: group.displayName,
           groupType: group.groupType,
@@ -124,6 +133,52 @@ const Page = () => {
       // Manual member adds are rejected on dynamic and on-prem synced groups
       condition: (row) => !row?.membershipRule && row?.onPremisesSyncEnabled !== true,
       multiPost: false,
+      allowResubmit: true,
+    },
+    {
+      label: 'Remove Member',
+      type: 'POST',
+      url: '/api/ExecGroupMembers',
+      icon: <CippIcons.PersonRemove />,
+      customDataformatter: (row, action, formData) => ({
+        action: 'removeMember',
+        ...tenantScope(getRowTenant(row, currentTenant)),
+        groupId: row.id,
+        users: (formData.RemoveMember ?? []).map((member) => member.value),
+      }),
+      fields: [
+        {
+          type: 'autoComplete',
+          name: 'RemoveMember',
+          label: 'Select members to remove',
+          multiple: true,
+          creatable: false,
+          api: {
+            url: '/api/ListGroups',
+            // Plain property names here resolve against the clicked row, so the picker
+            // lists the current members of this group rather than every user in the tenant
+            data: { groupID: 'id', members: true, groupType: 'groupType' },
+            processFieldData: true,
+            dataKey: 'members',
+            labelField: (member) =>
+              member.userPrincipalName
+                ? `${member.displayName} (${member.userPrincipalName})`
+                : member.displayName,
+            valueField: 'id',
+            showRefresh: true,
+          },
+          validators: {
+            validate: (value) =>
+              (Array.isArray(value) && value.length > 0) || 'Select at least one member',
+          },
+        },
+      ],
+      confirmText: 'Select the members to remove from [displayName].',
+      // Manual member removals are rejected on dynamic and on-prem synced groups
+      condition: (row) => !row?.membershipRule && row?.onPremisesSyncEnabled !== true,
+      // The member picker is built from a single group's membership, so no bulk variant
+      hideBulk: true,
+      relatedQueryKeys: ['group-members-*'],
       allowResubmit: true,
     },
     {
@@ -460,16 +515,8 @@ const Page = () => {
           <Stack direction="row" spacing={1} sx={{
             alignItems: "center"
           }}>
-            <Button component={Link} href="groups/add" startIcon={<CippIcons.GroupAdd />}>
-              Add Group
-            </Button>
-            <Button
-              component={Link}
-              href="/identity/administration/group-templates/deploy"
-              startIcon={<CippIcons.RocketLaunch />}
-            >
-              Deploy Group Template
-            </Button>
+            <CippAddGroupDrawer />
+            <CippDeployGroupTemplateDrawer requiredPermissions={['Identity.Group.ReadWrite']} />
           </Stack>
         }
         dataSourceControls={reportDB.controls}
@@ -482,6 +529,7 @@ const Page = () => {
           reportDB.useReportDB ? reportDB.resolvedQueryKey : `groups-${currentTenant}`
         }
         actions={actions}
+        filters={filterList}
         offCanvas={offCanvas}
         rowOpen={{
           link: `/identity/administration/groups/group?groupId=[id]&tenantFilter=${tenantQuery}`,
@@ -655,6 +703,6 @@ const Page = () => {
   );
 }
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>
+Page.getLayout = (page) => <DashboardLayout tenantGroupSupport={true}>{page}</DashboardLayout>
 
 export default Page

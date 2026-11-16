@@ -6,6 +6,7 @@ import { useSettings } from "../../../../hooks/use-settings.js";
 import { useCippIntunePolicyActions } from "../../../../components/CippComponents/CippIntunePolicyActions.jsx";
 import { useCippReportDB } from "../../../../components/CippComponents/CippReportDBControls";
 import { Stack } from "@mui/system";
+import { CippIntuneDeploymentStatus } from "../../../../components/CippComponents/CippIntuneDeploymentStatus.jsx";
 
 const Page = () => {
   const pageTitle = "Intune Compliance Policies";
@@ -15,10 +16,11 @@ const Page = () => {
   const reportDB = useCippReportDB({
     apiUrl: "/api/ListCompliancePolicies",
     queryKey: "ListCompliancePolicies",
-    cacheName: "IntuneCompliancePolicies",
+    cacheName: "IntunePolicies",
     syncTitle: "Sync Compliance Policies Report",
     allowToggle: true,
     defaultCached: false,
+    serverPagination: true,
   });
 
   const actions = useCippIntunePolicyActions(tenant, "deviceCompliancePolicies", {
@@ -37,6 +39,10 @@ const Page = () => {
       "PolicyTypeName",
     ],
     actions: actions,
+    children: (row) => (
+      <CippIntuneDeploymentStatus row={row} tenant={tenant} type="deviceCompliancePolicies" />
+    ),
+    size: "lg",
   };
 
   const simpleColumns = [
@@ -54,6 +60,8 @@ const Page = () => {
       <CippTablePage
         title={pageTitle}
         apiUrl={reportDB.resolvedApiUrl}
+        apiData={reportDB.resolvedApiData}
+        apiDataKey={reportDB.apiDataKey}
         queryKey={reportDB.resolvedQueryKey}
         actions={actions}
         offCanvas={offCanvas}
@@ -76,5 +84,5 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout tenantGroupSupport={true}>{page}</DashboardLayout>;
 export default Page;

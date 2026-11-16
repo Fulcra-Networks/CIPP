@@ -16,6 +16,7 @@ const Page = () => {
     syncTitle: "Sync Assignment Filters Report",
     allowToggle: true,
     defaultCached: false,
+    serverPagination: true,
   });
 
   const actions = [
@@ -94,6 +95,8 @@ const Page = () => {
         }
         dataSourceControls={reportDB.controls}
         apiUrl={reportDB.resolvedApiUrl}
+        apiData={reportDB.resolvedApiData}
+        apiDataKey={reportDB.apiDataKey}
         queryKey={reportDB.resolvedQueryKey}
         actions={actions}
         offCanvas={offCanvas}
@@ -104,6 +107,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout tenantGroupSupport={true}>{page}</DashboardLayout>;
 
 export default Page;

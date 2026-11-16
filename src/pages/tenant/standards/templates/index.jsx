@@ -175,6 +175,24 @@ const Page = () => {
       data: {},
     })
   }
+  const filterList = [
+    {
+      filterName: 'Synced from repository',
+      value: [{ id: 'isSynced', value: 'Yes' }],
+      type: 'column',
+    },
+    {
+      filterName: 'Local changes not pushed',
+      value: [{ id: 'hasLocalChanges', value: 'Yes' }],
+      type: 'column',
+    },
+    {
+      filterName: 'Not synced',
+      value: [{ id: 'isSynced', value: 'No' }],
+      type: 'column',
+    },
+  ]
+
   const tableFilter = (
     <div>
       {oldStandards.isSuccess && oldStandards.data.length !== 0 && (
@@ -237,8 +255,10 @@ const Page = () => {
       }
       actions={actions}
       tableFilter={tableFilter}
+      filters={filterList}
       simpleColumns={[
         'templateName',
+        'source',
         'type',
         'tenantFilter',
         'excludedTenants',
@@ -253,7 +273,7 @@ const Page = () => {
 }
 
 Page.getLayout = (page) => (
-  <DashboardLayout>
+  <DashboardLayout usesTenant={false}>
     <TabbedLayout tabOptions={tabOptions}>{page}</TabbedLayout>
   </DashboardLayout>
 )

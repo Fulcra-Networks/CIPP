@@ -16,6 +16,7 @@ const Page = () => {
     syncTitle: "Sync Teams Report",
     allowToggle: true,
     defaultCached: false,
+    serverPagination: true,
   });
 
   const actions = [
@@ -47,6 +48,8 @@ const Page = () => {
       <CippTablePage
         title={pageTitle}
         apiUrl={reportDB.resolvedApiUrl}
+        apiData={reportDB.resolvedApiData}
+        apiDataKey={reportDB.apiDataKey}
         queryKey={reportDB.resolvedQueryKey}
         actions={actions}
         simpleColumns={[
@@ -73,6 +76,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout allTenantsSupport={true}>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout tenantGroupSupport={true} allTenantsSupport={true}>{page}</DashboardLayout>;
 
 export default Page;

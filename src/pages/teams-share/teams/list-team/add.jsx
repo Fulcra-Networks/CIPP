@@ -16,6 +16,7 @@ const TeamsAddTeamForm = () => {
     defaultValues: {
       displayName: "",
       description: "",
+      mailNickname: "",
       owner: null,
       visibility: "private",
     },
@@ -25,7 +26,7 @@ const TeamsAddTeamForm = () => {
     <CippFormPage
       formControl={formControl}
       queryKey="Teams-AddTeam"
-      title="Add Team"
+      title="Team"
       backButtonTitle="Teams Overview"
       postUrl="/api/AddTeam"
       resetForm={true}
@@ -34,6 +35,7 @@ const TeamsAddTeamForm = () => {
           tenantID: tenantDomain,
           displayName: values.displayName,
           description: values.description,
+          mailNickname: values.mailNickname?.trim() || undefined,
           owner: values.owner?.value, // owner from user selector
           visibility: values.visibility,
         };
@@ -59,6 +61,22 @@ const TeamsAddTeamForm = () => {
             label="Description"
             name="description"
             formControl={formControl}
+          />
+        </Grid>
+
+        {/* Mail Nickname */}
+        <Grid size={{ md: 6, xs: 12 }}>
+          <CippFormComponent
+            type="textField"
+            label="Mail Nickname (optional, used for the group email address)"
+            name="mailNickname"
+            formControl={formControl}
+            validators={{
+              pattern: {
+                value: /^[A-Za-z0-9._-]+$/,
+                message: "Only letters, numbers, dots, dashes and underscores are allowed",
+              },
+            }}
           />
         </Grid>
 

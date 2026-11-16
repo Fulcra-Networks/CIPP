@@ -119,7 +119,7 @@ const EditCAPolicy = () => {
 
   return (
     <CippFormPage
-      title={`Edit ${policyData?.displayName || "CA Policy"}`}
+      title={policyData?.displayName || "CA Policy"}
       formControl={formControl}
       queryKey={[`CAPolicies-${tenantFilter}`]}
       backButtonTitle="Conditional Access Policies"
@@ -146,6 +146,6 @@ const EditCAPolicy = () => {
   );
 };
 
-EditCAPolicy.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+EditCAPolicy.getLayout = (page) => <DashboardLayout usesTenant={false}>{page}</DashboardLayout>;
 
 export default EditCAPolicy;

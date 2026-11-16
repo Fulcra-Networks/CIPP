@@ -31,7 +31,7 @@ const AddContactTemplates = () => {
     <CippFormPage
       formControl={formControl}
       queryKey="AddContactTemplates"
-      title="Add Contact Template"
+      title="Contact Template"
       backButtonTitle="Contact Templates"
       postUrl="/api/AddContactTemplates"
       resetForm={true}
@@ -63,6 +63,6 @@ const AddContactTemplates = () => {
   );
 };
 
-AddContactTemplates.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+AddContactTemplates.getLayout = (page) => <DashboardLayout usesTenant={false}>{page}</DashboardLayout>;
 
 export default AddContactTemplates;

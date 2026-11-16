@@ -1,9 +1,8 @@
 import { Layout as DashboardLayout } from '../../../../layouts/index'
 import { TabbedLayout } from '../../../../layouts/TabbedLayout'
 import { CippIcons } from '../../../../utils/icon-registry'
-import { CippDataTable } from '../../../../components/CippTable/CippDataTable'
-import { CippHead } from '../../../../components/CippComponents/CippHead'
-import { Box, Button } from '@mui/material'
+import { CippTablePage } from '../../../../components/CippComponents/CippTablePage'
+import { Button } from '@mui/material'
 import { useDialog } from '../../../../hooks/use-dialog'
 import { CippApiDialog } from '../../../../components/CippComponents/CippApiDialog'
 import countryList from '../../../../data/countryList.json'
@@ -53,7 +52,19 @@ const Page = () => {
         { label: '%FirstName[1]%.%LastName% (j.doe)', value: '%FirstName[1]%.%LastName%' },
         { label: '%LastName% (doe)', value: '%LastName%' },
         { label: '%FirstName% (john)', value: '%FirstName%' },
+        {
+          label: '%FirstName[1]%.%LastNamePrefix[1]%%LastNameCore% (j.vdberg)',
+          value: '%FirstName[1]%.%LastNamePrefix[1]%%LastNameCore%',
+        },
+        {
+          label: '%FirstName[1]%%LastNamePrefix[1]%%LastNameCore% (jvdberg)',
+          value: '%FirstName[1]%%LastNamePrefix[1]%%LastNameCore%',
+        },
+        { label: '%FirstName%.%LastNameCore% (jan.berg)', value: '%FirstName%.%LastNameCore%' },
+        { label: '%FirstName[1]%.%LastNameCore% (j.berg)', value: '%FirstName[1]%.%LastNameCore%' },
       ],
+      helperText:
+        "Surname particles such as 'van de' are available separately as %LastNamePrefix% and the remaining name as %LastNameCore%.",
       multiple: false,
       creatable: true,
     },
@@ -209,6 +220,38 @@ const Page = () => {
       creatable: false,
     },
     {
+      label: 'SharePoint Sites',
+      name: 'sharePointSites',
+      type: 'autoComplete',
+      api: {
+        url: '/api/ListSites',
+        data: { type: 'SharePointSiteUsage' },
+        labelField: (option) => `${option.displayName} (${option.webUrl})`,
+        valueField: 'webUrl',
+        addedField: {
+          rootWebTemplate: 'rootWebTemplate',
+          ownerPrincipalName: 'ownerPrincipalName',
+        },
+        queryKey: `SharePointSites-${userSettings.currentTenant}`,
+      },
+      helperText: 'New users are added to these sites 15 minutes after creation.',
+      multiple: true,
+      creatable: false,
+    },
+    {
+      label: 'SharePoint Site Role',
+      name: 'sharePointSiteRole',
+      type: 'autoComplete',
+      options: [
+        { label: 'Members', value: 'Members' },
+        { label: 'Owners', value: 'Owners' },
+        { label: 'Visitors', value: 'Visitors' },
+      ],
+      helperText: 'Defaults to Members.',
+      multiple: false,
+      creatable: false,
+    },
+    {
       label: 'Job Title',
       name: 'jobTitle',
       type: 'textField',
@@ -249,6 +292,11 @@ const Page = () => {
       type: 'textField',
     },
     {
+      label: 'Require password change at next logon',
+      name: 'MustChangePass',
+      type: 'switch',
+    },
+    {
       label: 'Enforce Per-User MFA',
       name: 'perUserMfa',
       type: 'switch',
@@ -272,6 +320,10 @@ const Page = () => {
       })) || []),
   ]
 
+  // The Add User form caches this list under its own per-tenant key, and AllTenants templates
+  // show up in every tenant's form, so refresh those too or a template saved here stays invisible.
+  const templateQueryKeys = [`ListNewUserDefaults-${userSettings.currentTenant}`, 'UserDefaults-*']
+
   const actions = [
     {
       label: 'Edit Template',
@@ -281,7 +333,7 @@ const Page = () => {
       setDefaultValues: true,
       data: { GUID: 'GUID', tenantFilter: 'tenantFilter' },
       confirmText: 'Edit the template and click Confirm to save.',
-      relatedQueryKeys: [`ListNewUserDefaults-${userSettings.currentTenant}`],
+      relatedQueryKeys: templateQueryKeys,
       fields: templateFields,
     },
     {
@@ -292,6 +344,7 @@ const Page = () => {
       data: { ID: 'GUID' },
       confirmText: 'Do you want to delete this User Template?',
       multiPost: false,
+      relatedQueryKeys: templateQueryKeys,
     },
   ]
 
@@ -311,6 +364,8 @@ const Page = () => {
       'sharedMailboxPermission',
       'sharedCalendars',
       'sharedCalendarPermission',
+      'sharePointSites',
+      'sharePointSiteRole',
       'jobTitle',
       'streetAddress',
       'city',
@@ -319,6 +374,7 @@ const Page = () => {
       'country',
       'companyName',
       'department',
+      'MustChangePass',
       'perUserMfa',
       'mobilePhone',
       'businessPhones',
@@ -334,36 +390,34 @@ const Page = () => {
     type: 'POST',
     url: '/api/AddUserDefaults',
 
-    relatedQueryKeys: [`ListNewUserDefaults-${userSettings.currentTenant}`],
+    relatedQueryKeys: templateQueryKeys,
   }
 
   return (
     <>
-      <CippHead title={pageTitle} />
-      <Box sx={{ py: 2 }}>
-        <CippDataTable
-          title="User Templates"
-          api={{ url: '/api/ListNewUserDefaults?includeAllTenants=false' }}
-          queryKey={`ListNewUserDefaults-${userSettings.currentTenant}`}
-          actions={actions}
-          offCanvas={offCanvas}
-          mobileCard={{ primary: 'templateName' }}
-          simpleColumns={[
-            'templateName',
-            'defaultForTenant',
-            'displayName',
-            'usernameFormat',
-            'usernameSpaceHandling',
-            'usageLocation',
-            'department',
-          ]}
-          cardButton={
-            <Button startIcon={<CippIcons.Add />} onClick={createDialog.handleOpen} sx={{ mr: 1 }}>
-              Add Template
-            </Button>
-          }
-        />
-      </Box>
+      <CippTablePage
+        title={pageTitle}
+        apiUrl="/api/ListNewUserDefaults"
+        apiData={{ includeAllTenants: false }}
+        queryKey={`ListNewUserDefaults-${userSettings.currentTenant}`}
+        actions={actions}
+        offCanvas={offCanvas}
+        mobileCard={{ primary: 'templateName' }}
+        simpleColumns={[
+          'templateName',
+          'defaultForTenant',
+          'displayName',
+          'usernameFormat',
+          'usernameSpaceHandling',
+          'usageLocation',
+          'department',
+        ]}
+        cardButton={
+          <Button startIcon={<CippIcons.Add />} onClick={createDialog.handleOpen} sx={{ mr: 1 }}>
+            Add Template
+          </Button>
+        }
+      />
 
       <CippApiDialog
         createDialog={createDialog}

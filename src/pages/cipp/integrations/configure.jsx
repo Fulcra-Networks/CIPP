@@ -28,7 +28,11 @@ import CippIntegrationFieldMapping from "../../../components/CippIntegrations/Ci
 import { CippCardTabPanel } from "../../../components/CippComponents/CippCardTabPanel";
 import CippApiClientManagement from "../../../components/CippIntegrations/CippApiClientManagement";
 import { CippApiEgressCard } from "../../../components/CippIntegrations/CippApiEgressCard";
+import CippIntegrationOAuthConnect from "../../../components/CippIntegrations/CippIntegrationOAuthConnect";
 import CippApiDocumentation from "../../../components/CippIntegrations/CippApiDocumentation";
+import CippMcpManagement, {
+  McpFeatureDisabledAlert,
+} from "../../../components/CippIntegrations/CippMcpManagement";
 
 function tabProps(index) {
   return {
@@ -48,6 +52,15 @@ const Page = () => {
     queryKey: "Integrations",
     refetchOnMount: false,
     refetchOnReconnect: false,
+  });
+
+  // MCP resource-app status (cippapi only) so a setup conflict is flagged on the page, not just the
+  // MCP tab. Shares the McpAuthStatus query key with the MCP tab, so react-query dedupes.
+  const mcpAuth = ApiGetCall({
+    url: "/api/ExecApiClient",
+    data: { Action: "GetMcpAuth" },
+    queryKey: "McpAuthStatus",
+    waiting: router.query.id === "cippapi",
   });
 
   const [testQuery, setTestQuery] = useState({ url: "", waiting: false, queryKey: "" });
@@ -78,18 +91,24 @@ const Page = () => {
     ...syncQuery,
   });
 
-  const [haloTestTicketQuery, setHaloTestTicketQuery] = useState({ url: "", waiting: false, queryKey: "" });
-  const actionHaloTestTicketResults = ApiGetCall({
-    ...haloTestTicketQuery,
+  // PSA integrations that can raise a real ticket on demand, keyed by extension id. Each has its
+  // own endpoint because the test ticket is built from that PSA's own settings.
+  const testTicketEndpoints = {
+    HaloPSA: "/api/ExecHaloPSATestTicket",
+    Syncro: "/api/ExecSyncroTestTicket",
+  };
+  const [testTicketQuery, setTestTicketQuery] = useState({ url: "", waiting: false, queryKey: "" });
+  const actionTestTicketResults = ApiGetCall({
+    ...testTicketQuery,
   });
-  const handleHaloTestTicket = () => {
-    if (haloTestTicketQuery.waiting) {
-      actionHaloTestTicketResults.refetch();
+  const handleTestTicket = () => {
+    if (testTicketQuery.waiting) {
+      actionTestTicketResults.refetch();
     }
-    setHaloTestTicketQuery({
-      url: "/api/ExecHaloPSATestTicket",
+    setTestTicketQuery({
+      url: testTicketEndpoints[router.query.id],
       waiting: true,
-      queryKey: `ExecHaloPSATestTicket-${router.query.id}`,
+      queryKey: `ExecPSATestTicket-${router.query.id}`,
     });
   };
   const clearHIBPKey = ApiPostCall({
@@ -167,6 +186,10 @@ const Page = () => {
                 {extension.alertText}
               </Alert>
             )}
+            {extension?.id === "NinjaOne" &&
+              integrations?.data?.NinjaOne?.TicketingEnabled === true && (
+                <CippIntegrationOAuthConnect extension="NinjaOne" />
+              )}
             <Stack
               direction="row"
               spacing={2}
@@ -214,15 +237,15 @@ const Page = () => {
                   </Button>
                 </Box>
               )}
-              {extension?.id === "HaloPSA" && (
+              {testTicketEndpoints[extension?.id] && (
                 <Box>
                   <Button
                     variant="outlined"
                     color="primary"
-                    onClick={() => handleHaloTestTicket()}
+                    onClick={() => handleTestTicket()}
                     disabled={
-                      actionHaloTestTicketResults?.isLoading ||
-                      integrations?.data?.HaloPSA?.Enabled !== true
+                      actionTestTicketResults?.isLoading ||
+                      integrations?.data?.[extension.id]?.Enabled !== true
                     }
                   >
                     <SvgIcon fontSize="small" style={{ marginRight: "8" }}>
@@ -266,13 +289,28 @@ const Page = () => {
             </Stack>
             <CippApiResults apiObject={actionTestResults} />
             <CippApiResults apiObject={actionSyncResults} />
-            <CippApiResults apiObject={actionHaloTestTicketResults} />
+            <CippApiResults apiObject={actionTestTicketResults} />
             <CippApiResults apiObject={clearHIBPKey} />
+            {router.query.id === "cippapi" && <McpFeatureDisabledAlert sx={{ mb: 2 }} />}
+            {router.query.id === "cippapi" && mcpAuth.data?.Results?.ResourceConflict && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                <strong>MCP setup needs attention.</strong> The app{" "}
+                <strong>
+                  {mcpAuth.data.Results.ResourceConflict.AppName ||
+                    mcpAuth.data.Results.ResourceConflict.AppId}
+                </strong>{" "}
+                is using the MCP resource URL, which blocks the shared CIPP-MCP resource app. Open
+                the <strong>MCP</strong> tab for the exact steps to resolve it.
+              </Alert>
+            )}
           </CardContent>
           <Box sx={{ width: "100%" }}>
             <Box sx={{ borderBottom: 1, borderColor: "divider", px: "24px", m: "auto" }}>
               <Tabs value={value} onChange={handleTabChange} aria-label="Integration settings">
                 <Tab label="Settings" {...tabProps(0)} />
+                {extension?.id === "cippapi" && (
+                  <Tab label="API Usage" value={5} {...tabProps(5)} />
+                )}
                 {extension?.mappingRequired && (
                   <Tab
                     label="Tenant Mapping"
@@ -301,19 +339,24 @@ const Page = () => {
                 {extension?.id === "cippapi" && (
                   <Tab label="API Documentation" value={3} {...tabProps(3)} />
                 )}
+                {extension?.id === "cippapi" && (
+                  <Tab label="MCP" value={4} {...tabProps(4)} />
+                )}
               </Tabs>
             </Box>
             <CippCardTabPanel value={value} index={0}>
               {extension?.id === "cippapi" ? (
-                <Stack spacing={2}>
-                  <CippApiEgressCard />
-                  <CippApiClientManagement />
-                </Stack>
+                <CippApiClientManagement />
               ) : (
                 <CippIntegrationSettings />
               )}
             </CippCardTabPanel>
 
+            {extension?.id === "cippapi" && (
+              <CippCardTabPanel value={value} index={5}>
+                <CippApiEgressCard />
+              </CippCardTabPanel>
+            )}
             {extension?.mappingRequired && (
               <CippCardTabPanel value={value} index={1}>
                 <CippIntegrationTenantMapping />
@@ -329,6 +372,11 @@ const Page = () => {
                 <CippApiDocumentation />
               </CippCardTabPanel>
             )}
+            {extension?.id === "cippapi" && (
+              <CippCardTabPanel value={value} index={4}>
+                <CippMcpManagement />
+              </CippCardTabPanel>
+            )}
           </Box>
         </CippPageCard>
       )}
@@ -336,6 +384,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout usesTenant={false}>{page}</DashboardLayout>;
 
 export default Page;

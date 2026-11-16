@@ -21,6 +21,7 @@ import { CippFormCondition } from '../CippComponents/CippFormCondition'
 import CippGraphResourceSelector from '../CippComponents/CippGraphResourceSelector'
 import CippGraphAttributeSelector from '../CippComponents/CippGraphAttributeSelector'
 import { getCippValidator } from '../../utils/get-cipp-validator'
+import { pushEnrolmentHint, usePushDevices } from '../../hooks/use-push-subscription'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { ApiGetCall, ApiPostCall } from '../../api/ApiCall'
@@ -29,6 +30,8 @@ import CippFormInputArray from '../CippComponents/CippFormInputArray'
 import { CippApiResults } from '../CippComponents/CippApiResults'
 
 const CippSchedulerForm = (props) => {
+  const pushDevices = usePushDevices()
+  const pushEnrolled = pushDevices.devices.length > 0
   const {
     formControl,
     fullWidth = false,
@@ -80,6 +83,15 @@ const CippSchedulerForm = (props) => {
 
   const handleSubmit = () => {
     const values = formControl.getValues()
+
+    // In advanced mode the JSON is the parameters; the hidden standard fields hold stale nulls
+    if (values.advancedParameters && values.RawJsonParameters) {
+      try {
+        values.parameters = JSON.parse(values.RawJsonParameters)
+      } catch {
+        return
+      }
+    }
 
     // Extract values from string array parameters
     if (values.parameters && selectedCommand?.addedFields?.Parameters) {
@@ -504,6 +516,8 @@ const CippSchedulerForm = (props) => {
           const ResetParams = {
             tenantFilter: tenantFilterForForm,
             PsaTicketStrategy: psaStrategyValue,
+            PsaTicketId: task.PsaTicketId,
+            reference: task.Reference,
             RowKey: router.query.Clone || cloneMode ? null : task.RowKey,
             Name:
               router.query.Clone || cloneMode
@@ -516,7 +530,19 @@ const CippSchedulerForm = (props) => {
             },
             ScheduledTime: task.ScheduledTime,
             Recurrence: recurrence,
-            parameters: task.Parameters,
+            // PowerShell parameters are case-insensitive; match the field names so a stored
+            // 'skipCache' fills the SkipCache field instead of posting alongside it
+            parameters:
+              task.Parameters && typeof task.Parameters === 'object'
+                ? Object.fromEntries(
+                    Object.entries(task.Parameters).map(([key, value]) => [
+                      commandForForm?.Parameters?.find(
+                        (p) => p.Name.toLowerCase() === key.toLowerCase()
+                      )?.Name ?? key,
+                      value,
+                    ])
+                  )
+                : task.Parameters,
             postExecution: postExecution,
             // Set task type based on whether trigger exists
             taskType: task.Trigger
@@ -676,7 +702,9 @@ const CippSchedulerForm = (props) => {
               { label: 'Webhook', value: 'Webhook' },
               { label: 'Email', value: 'Email' },
               { label: 'PSA', value: 'PSA' },
+              ...(pushEnrolled ? [{ label: 'Push (notify me)', value: 'Push' }] : []),
             ]}
+            helperText={pushEnrolmentHint(pushDevices)}
           />
         </Grid>
 
@@ -1240,6 +1268,7 @@ const CippSchedulerForm = (props) => {
                     compareType="isNot"
                     compareValue={true}
                     formControl={formControl}
+                    clearOnHide={false}
                     key={idx}
                   >
                     <Grid
